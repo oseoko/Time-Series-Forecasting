@@ -1,0 +1,25 @@
+/opt/conda/lib/python3.10/site-packages/torchvision/io/image.py:13: UserWarning: Failed to load image Python extension: '/opt/conda/lib/python3.10/site-packages/torchvision/image.so: undefined symbol: _ZN3c1017RegisterOperatorsD1Ev'If you don't plan on using image functionality from `torchvision.io`, you can ignore this warning. Otherwise, there might be something wrong with your environment. Did you have `libjpeg` or `libpng` installed before building `torchvision` from source?
+  warn(
+[infer] test windows=6  channels=2(sig2)  tag=sig2  scale-pct=20.0  memory cases=18  device=cpu  llm=gpt-5-mini
+    설명: 향후 7일 전체 수요는 평소 수준과 유사하나, 5월 5일에 약간 큰 하락이 있고 5월 8일(금요일)에 소폭 반등이 예상됩니다.
+  win 1/6 2026-05-04  MAE base=7829 calib=7400  calib↓  attr=[sd,wu]
+    설명: 이번 7일 예측은 전반적으로 평상시 수준과 유사하며, 5월 15일(금요일)에만 눈에 띄는 소폭 상승이 예상됩니다.
+  win 2/6 2026-05-11  MAE base=2163 calib=1806  calib↓  attr=[··,wu]
+    설명: 향후 7일 동안 외국인 일별 입국자 수는 점진적으로 증가해 5일차(2026-05-22)에 정점을 찍은 뒤 소폭 하락합니다. 5일차가 눈에 띄게 높으며 나머지 날짜는 평상 수준에 가깝습니다.
+  win 3/6 2026-05-18  MAE base=2867 calib=2510  calib↓  attr=[··,wu]
+    설명: 이번 7일 수요는 전반적으로 평소 수준과 비슷하지만 첫째 날(2026-05-25)이 눈에 띄게 낮고, 다섯째 날(2026-05-29)은 소폭 높게 나타납니다.
+  win 4/6 2026-05-25  MAE base=4129 calib=2700  calib↓  attr=[sd,wu]
+    설명: 다음 7일 총입국자 수는 평소 수준과 비슷하거나 일부 날짜에서 변동이 있습니다. 2026-06-03(수요일)은 평일 사이 끼인 공휴일로 눈에 띄게 낮고, 2026-06-05(금요일)는 평년보다 다소 높은 편입니다.
+  win 5/6 2026-06-01  MAE base=3600 calib=2314  calib↓  attr=[sd,wu]
+    설명: 이번 주(6/8~6/14)는 주초부터 점진적으로 수요가 늘어 금요일(6/12)에 정점을 찍고 그 이후로 감소하는 패턴입니다. 전반적으로 평소 수준과 비슷하나 6월 12일에 눈에 띄는 상승이 예상됩니다.
+  win 6/6 2026-06-08  MAE base=5793 calib=5508  calib↓  attr=[··,wu]
+
+===== TEST 결과 (6 windows) =====
+  MAE   base=4397  calib=3706  (-690, -15.7%)
+  RMSE  base=5295  calib=4271  (-19.3%)
+  calib이 나은 window: 6/6
+  horizon별 MAE (h=1..7):
+    base : [7311, 5995, 3885, 3270, 5002, 2940, 2372]
+    calib: [6144, 4995, 2885, 3270, 3336, 2940, 2372]
+[store] → /work/fs-release/memory/exp_sig2_cap20/test_results_sig2_scale20_experience.json  (scale-pct=20.0)
+[usage] calls=18  in=40,224 tok  out=8,151 tok

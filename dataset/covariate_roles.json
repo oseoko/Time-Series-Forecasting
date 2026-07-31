@@ -1,0 +1,5 @@
+{
+  "TARGET": "FOREIGNER",
+  "FUTURE_KNOWN": "hol_cn, hol_jp, hol_us, hol_kr, hol_kr_wd, concert_cap, flight_cn, flight_jp, flight_us, flight_total, is_friday",
+  "PAST_ONLY": "hotel_price, fx_usd, fx_cny, fx_jpy, w_seoul_AVGTA, w_seoul_SUMRN, w_seoul_AVGWS, w_seoul_AVGRHM, w_seoul_AVGPS, w_seoul_SUMGSR, w_seoul_DDMES, w_seoul_AVGTCA"
+}

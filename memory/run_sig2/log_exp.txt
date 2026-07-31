@@ -1,0 +1,185 @@
+/opt/conda/lib/python3.10/site-packages/torchvision/io/image.py:13: UserWarning: Failed to load image Python extension: '/opt/conda/lib/python3.10/site-packages/torchvision/image.so: undefined symbol: _ZN3c1017RegisterOperatorsD1Ev'If you don't plan on using image functionality from `torchvision.io`, you can ignore this warning. Otherwise, there might be something wrong with your environment. Did you have `libjpeg` or `libpng` installed before building `torchvision` from source?
+  warn(
+[build] windows=18  channels=2(sig2)  tag=sig2  device=cpu  llm=gpt-5-mini
+[build] → experience.json
+[build] labels=['strong_down', 'weak_down', 'neutral', 'weak_up', 'strong_up']
+
+===== window 1/18 (2025-12-29) profile={'trend': 'rising', 'level': 'mid', 'volatility': 'low'} =====
+  attribution: hol_kr_wd=sd | is_friday=su
+  R_attr : hol_kr_wd는 window 중 4일차에만 공휴일(평일에 끼인 관공서 휴무)으로 관측되어 훈련에서 관찰된 수천~만단위의 큰 음의 잔차 특성과 일치하므로 해당일에 강한 하향 기여로 판단합니다. is_friday는 5일차가 금요일로, 예측 기반 수준(예측값이 높은 구간)에서 금요일 효과가 통상 수천~만명 수준의 플러스로 나타나는 점을 고려해 해당일에 강한 상승 기여로 판정했으며 나머지 날들은 근거 부족으로 neutral입니다.
+  Ŷ_base mean=37470  Ŷ_calib mean=36898  gt=31314
+  R_calib: 4일차에는 hol_kr_wd가 평일에 끼인 공휴일로 관측되어 과거 잔차가 대체로 수천~만단위의 큰 음수로 나타난 점을 반영해 기준예측을 보수적으로 크게 낮췄습니다. 5일차는 is_friday=1로 수요가 통상 추가 상승하는 경향이 있어 평소 범위 내에서 상승 보정했으며, 다른 날들은 해당 채널이 활성화되지 않아 예측을 그대로 두었습니다.
+  MAE base=6155 → calib=6421  verdict=worse
+  retrieved(lb)=[]  retrieved(attr)=[]
+  R_reflect: 잔차가 7일 내내 음의 값으로 비슷한 수준(수천~만 단위)으로 깔려 있어 특정일에 집중된 이상값이 아니라 Ŷ_base의 수준 편향으로 보입니다. hol_kr_wd는 4일차에만 1로 특이하긴 하나 잔차가 그날에만 몰려 있지 않고 전체적으로 낮아서 해당 피처가 잔차를 설명한다고 보기 어렵고, is_friday도 마찬가지로 5일차에만 1이지만 잔차 분포와 일치하지 않습니다.
+  라벨 수정: hol_kr_wd: 4일:sd→·· | is_friday: 5일:su→··
+
+===== window 2/18 (2026-01-05) profile={'trend': 'flat', 'level': 'mid', 'volatility': 'low'} =====
+  attribution: hol_kr_wd=·· | is_friday=wu
+  R_attr : hol_kr_wd의 향후 7일 값이 모두 0으로 공휴일이 없어 이 피처가 잔차를 설명할 근거가 없습니다. is_friday는 5일차에만 1로 관측되며 과거에는 금요일이 Ŷ_base보다 수천명 단위로 위로 보정되는 경향이 있어 이번에는 소폭 상향(weak_up) 기여가 합리적입니다.
+  Ŷ_base mean=30354  Ŷ_calib mean=30640  gt=30072
+  R_calib: 5일차에만 is_friday=1로 관측되어 그 날만 소폭 위로 보정했습니다. 과거 사례의 reflect에서 특정일 집중 보정이 과대적용되어 성과가 나빴으므로 이번에는 약한(weak_up) 신호를 보수적으로 반영해 기준예측보다 약 +2,000명만 밀었습니다.
+  MAE base=2005 → calib=2291  verdict=worse
+  retrieved(lb)=['2025-12-29']  retrieved(attr)=['2025-12-29']
+  R_reflect: hol_kr_wd는 next-7이 전부 0이라 해당 피처가 이번 잔차(특히 1일차 큰 플러스와 4일차 큰 마이너스)를 설명할 근거가 없습니다. is_friday는 5일차에만 1이었는데 그 날의 잔차는 −1220로 음수여서, 과거 경향과 달리 실제 잔차는 금요일에 상향 기여를 시사하지 않으므로 원래 매긴 weak_up은 맞지 않습니다.
+  라벨 수정: is_friday: 5일:wu→··
+
+===== window 3/18 (2026-01-12) profile={'trend': 'falling', 'level': 'mid', 'volatility': 'low'} =====
+  attribution: hol_kr_wd=·· | is_friday=wu
+  R_attr : hol_kr_wd의 향후 7일 값은 모두 0이라 공휴일로 인한 체계적 하향 기여를 기대할 근거가 없습니다. is_friday는 7일 중 5일차에만 1로 관찰되며, 과거 지식상 금요일은 대체로 입국자 수를 수천명 수준으로 끌어올리는 경향이 있으나 이번 창에서는 극단적 이벤트나 연속적 효과가 없어 보이므로 약한 상향(weak_up)으로 판단합니다.
+  Ŷ_base mean=30679  Ŷ_calib mean=31036  gt=26849
+  R_calib: 5일차에만 관찰된 is_friday 신호에 따라 해당 일자만 보수적으로 상향 조정했습니다. 과거 reflect에서 금요일 과대반영으로 오히려 성능이 나빠진 사례가 있어 이번에는 강한 상향 대신 수천명 수준(+2,500명)만 밀어 base의 수준 편향을 반복하지 않도록 했습니다.
+  MAE base=3830 → calib=4187  verdict=worse
+  retrieved(lb)=['2026-01-05', '2025-12-29']  retrieved(attr)=['2026-01-05', '2025-12-29']
+  R_reflect: 잔차가 7일 전체에 걸쳐 모두 음수(수천명 규모)로 일정하게 몰려 있어 특정일 이벤트가 아니라 Ŷ_base의 수준 편향으로 보입니다. hol_kr_wd는 향후 7일 모두 0이라 기여 근거가 없고, is_friday는 5일차에만 1이지만 잔차가 그 날에만 몰려 있지 않아 금요일 신호로 잔차를 설명할 수 없습니다.
+  라벨 수정: is_friday: 5일:wu→··
+
+===== window 4/18 (2026-01-19) profile={'trend': 'falling', 'level': 'mid', 'volatility': 'high'} =====
+  attribution: hol_kr_wd=·· | is_friday=wu
+  R_attr : hol_kr_wd의 next-7 값은 모두 0이라 공휴일로 인한 체계적 하향 기여 근거가 없어 neutral입니다. is_friday는 5일차에만 1로 관측되어 과거 학습에서 금요일이 통상 수천명 수준의 상향 잔차를 만들었던 점을 반영해 불확실성 고려 후 약한 상향(weak_up)으로 판단합니다.
+  Ŷ_base mean=26136  Ŷ_calib mean=26493  gt=27970
+  R_calib: hol_kr_wd는 next-7이 모두 0이라 neutral로 예측을 전혀 움직이지 않았고, is_friday는 5일차에만 관측되어 그날만 상향 보정했습니다. 과거 사례들에서는 is_friday를 과대반영해 예측이 악화된 경우가 있어 이번엔 보수적으로 약 +2,500명만 nudge해 Ŷ_base의 모양을 유지하면서 과잉 반응을 피했습니다.
+  MAE base=1834 → calib=1477  verdict=better
+  retrieved(lb)=['2026-01-12', '2026-01-05', '2025-12-29']  retrieved(attr)=['2026-01-12', '2026-01-05', '2025-12-29']
+  R_reflect: 잔차가 7일 내내 모두 양수로 깔려 있어 전반적인 상향 편향(Ŷ_base의 수준 오차)이 주된 원인입니다. 다만 5일차에 잔차가 특히 크게 몰려 있고 그날 is_friday 값이 1이므로 그 한 시점의 추가 상향 기여는 is_friday로 설명되는 것이 타당합니다. hol_kr_wd는 next-7에 모두 0이라 잔차와 연관성이 없어 neutral입니다.
+
+===== window 5/18 (2026-01-26) profile={'trend': 'falling', 'level': 'low', 'volatility': 'low'} =====
+  attribution: hol_kr_wd=·· | is_friday=wu
+  R_attr : hol_kr_wd의 향후 7일 값은 모두 0이라 공휴일에 의한 하향 효과를 기대할 근거가 없습니다. is_friday는 5일차에만 1로 관측되어 과거 관찰에서 금요일이 보통 잔차를 플러스로 만드던 점을 고려하면 해당 하루에 소폭 상향 기여했을 가능성이 큽니다(대규모 성수기 신호가 없으므로 weak_up로 판단).
+  Ŷ_base mean=27794  Ŷ_calib mean=28152  gt=27938
+  R_calib: 향후값 중 is_friday가 1인 5일차에만 과거 관찰에서 금요일 잔차가 소폭 플러스로 작용한 점을 반영해 보수적으로 상향(nudge)했습니다. hol_kr_wd는 모두 0이므로 예측을 전혀 건드리지 않았고, 과거 reflect에서 금요일 신호를 과대반영해 성과가 나빠진 사례를 피하기 위해 변화폭은 절제해 약 +2.5천명으로 제한했습니다.
+  MAE base=805 → calib=1162  verdict=worse
+  retrieved(lb)=['2026-01-19', '2026-01-12', '2026-01-05']  retrieved(attr)=['2026-01-19', '2026-01-12', '2026-01-05']
+  R_reflect: 잔차가 특정 하루(3일차와 7일차)에 양의 편차로 몰려 있고(특히 7일차가 큼), hol_kr_wd는 향후 7일 모두 0이라 이 피처로는 설명되지 않습니다. is_friday는 5일차에만 1이었는데 그날 잔차는 음수여서(−426) 과거 금요일의 플러스 효과를 근거로 한 weak_up 판단은 실제와 맞지 않습니다.
+  라벨 수정: is_friday: 5일:wu→··
+
+===== window 6/18 (2026-02-02) profile={'trend': 'falling', 'level': 'low', 'volatility': 'low'} =====
+  attribution: hol_kr_wd=·· | is_friday=wu
+  R_attr : hol_kr_wd의 향후 7일 값이 모두 0이라 공휴일로 인한 체계적 하향 효과를 적용할 근거가 없습니다. is_friday는 5일차에만 1로 관측되며 학습상 금요일은 대체로 Ŷ_base보다 수요를 수천명 수준으로 끌어올리는 경향이 있어 이번에도 소폭 상향 기여가 합리적입니다.
+  Ŷ_base mean=28027  Ŷ_calib mean=28384  gt=30718
+  R_calib: 5일차(is_friday=1)만 과거 패턴상 체계적 상향을 보이는 날짜이므로 그 날에만 보수적으로 위로 조정했습니다. 유사 사례의 반성과 위험(금요일 효과 과대반영으로 성능 악화)을 반영하여 과도하게 밀지 않고 Ŷ_base의 수준에서 수천명 규모(+2500)만 살짝 올려 예측 궤적을 유지했습니다.
+  MAE base=2691 → calib=2334  verdict=better
+  retrieved(lb)=['2026-01-26', '2026-01-19', '2026-01-12']  retrieved(attr)=['2026-01-19', '2026-01-26', '2026-01-12']
+  R_reflect: hol_kr_wd에 붙였던 라벨은 원래대로 neutral이 맞습니다. 잔차가 7일에 걸쳐 비슷한 방향으로 분포되어 있고 hol_kr_wd는 모든 날짜가 0이라 이 잔차를 설명하지 못합니다. is_friday의 5일차 값이 1이긴 하지만 잔차는 특정일에 몰려 있지 않고 오히려 초반(1~3일)에 더 크게 나타나므로, 5일차만을 근거로 한 weak_up 라벨은 타당하지 않습니다.
+  라벨 수정: is_friday: 5일:wu→··
+
+===== window 7/18 (2026-02-09) profile={'trend': 'rising', 'level': 'low', 'volatility': 'low'} =====
+  attribution: hol_kr_wd=·· | is_friday=wu
+  R_attr : hol_kr_wd의 향후 7일 값이 모두 0이므로 공휴일로 인한 하향 편향을 기대할 근거가 없습니다. is_friday는 5일차에만 1로 나타나 훈련에서 보인 금요일의 소폭 상향(수천명 수준) 경향과 일치하지만 단일 금요일에 그치고 전체 수준이 극단적이지 않아 영향은 약하다고 판단됩니다.
+  Ŷ_base mean=30160  Ŷ_calib mean=30446  gt=32102
+  R_calib: 5일차에만 is_friday가 활성화되어 훈련에서 금요일이 보통 소폭 플러스(수천명)로 작용한 점을 반영해 해당 날만 위로 약 +2,000명만 보수적으로 밀었습니다. hol_kr_wd는 모두 0이므로 다른 날은 전혀 움직이지 않았고, 과거 reflect에서 금요일 보정을 과다 적용해 예측이 악화된 사례가 있어 이번에는 신중하게 소폭만 조정했습니다.
+  MAE base=3591 → calib=3305  verdict=better
+  retrieved(lb)=['2025-12-29', '2026-01-05', '2026-02-02']  retrieved(attr)=['2026-02-02', '2026-01-05', '2026-01-12']
+  R_reflect: 잔차가 6~7일차에 크게 몰려 있어 그 큰 상향분은 Ŷ_base의 오차(피처들이 설명하지 못한 부분)로 보입니다. 다만 5일차에만 is_friday가 1이었고 잔차도 소폭 플러스(+2201)여서 그 날의 약한 상향은 is_friday로 설명될 수 있으므로 해당 라벨만 유지합니다.
+
+===== window 8/18 (2026-02-16) profile={'trend': 'rising', 'level': 'low', 'volatility': 'low'} =====
+  attribution: hol_kr_wd=sd | is_friday=wu
+  R_attr : hol_kr_wd는 향후 3일(연속된 1) 동안 공휴일 표기가 있어 과거 관측에서 연속 홀일이 있을 때 예측보다 수천~만명 단위로 큰 하향 잔차를 일으킨 사례가 많았습니다. 따라서 이번에는 첫 3일에 강한 하향 기여가 있을 것으로 판단됩니다. is_friday는 5일차에만 1로 관측되어 금요일 효과(대체로 수천명 수준의 상향)를 소폭 반영하는 것이 타당해 약한 상향으로 표기했습니다.
+  Ŷ_base mean=34194  Ŷ_calib mean=32194  gt=34258
+  R_calib: 첫 3일(1~3일차)은 hol_kr_wd가 연속 관측되어 과거에 강한 하향 잔차가 있었으나, reflect에서 과거에 과다하게 특정일만 조정해 실패한 사례를 반영해 보수적으로 하향(각 일별로 수천명 범위, 그러나 base의 궤적과 ±20% 상한 이내) 조정했습니다. 5일차는 is_friday=1으로 금요일 효과가 관측되어 소폭 상향(약 +2.5천명)을 반영했고, 나머지 날들은 base의 형태를 유지해 움직이지 않았습니다.
+  MAE base=6711 → calib=3997  verdict=better
+  retrieved(lb)=['2025-12-29', '2026-02-09', '2026-01-05']  retrieved(attr)=['2025-12-29', '2026-02-09', '2026-02-02']
+  R_reflect: 잔차가 처음 3일에 음수로 크게 몰려 있고(−7.4k, −6.8k, −9.0k), 그 3일에 hol_kr_wd=1으로 연속 공휴일 표기가 있었으므로 hol_kr_wd의 강한 하향 기여가 맞습니다. 5일차 잔차가 크게 양수(+11.7k)이고 그날만 is_friday=1이므로 is_friday는 약한 상향이 아니라 강한 상향 기여로 보는 것이 맞습니다. 나머지 날들의 잔차는 해당 피처들과 일치하지 않아 neutral로 내려야 합니다.
+  라벨 수정: is_friday: 5일:wu→su
+
+===== window 9/18 (2026-02-23) profile={'trend': 'rising', 'level': 'mid', 'volatility': 'low'} =====
+  attribution: hol_kr_wd=·· | is_friday=wu
+  R_attr : hol_kr_wd의 향후 7일 값이 전부 0이므로 공휴일에 따른 체계적 하향 근거가 없어 모든 날에 neutral로 판단합니다. is_friday는 5일차에만 1로 관측되어 금요일 효과(과거에 보통 수천명 수준의 플러스 기여)가 작게나마 이번 window에 상향 기여했을 가능성이 있어 그 날만 weak_up으로 판단합니다.
+  Ŷ_base mean=32732  Ŷ_calib mean=32946  gt=41082
+  R_calib: 5일차(is_friday=1)에만 약한 상향 신호(weak_up)가 관측되어 해당일만 보수적으로 위로 밀었습니다. 과거 reflect에서 같은 라벨이 때때로 과대보정으로 악화된 사례가 있어 과잉반응을 피하고 Ŷ_base가 이미 일부 반영한 부분을 고려하여 약 +1,500명(완만한 nudge)만 적용했습니다.
+  MAE base=8350 → calib=8135  verdict=better
+  retrieved(lb)=['2026-02-16', '2025-12-29', '2026-02-09']  retrieved(attr)=['2026-02-09', '2026-01-05', '2026-02-02']
+  R_reflect: 잔차가 주로 3~5일차에 몰려 있고 특히 3~5일에 큰 플러스가 집중되어 있어 이는 특정일 이벤트(하루 또는 몇일치 특이치)가 원인일 가능성이 큽니다. hol_kr_wd는 향후 7일 모두 0으로 특이값이 없어 잔차를 설명하지 못하고, is_friday는 5일차에만 1이라 그 하루의 일부 증가를 설명할 수 있으므로 5일차만 weak_up으로 두는 것이 근거에 맞습니다.
+
+===== window 10/18 (2026-03-02) profile={'trend': 'rising', 'level': 'mid', 'volatility': 'high'} =====
+  attribution: hol_kr_wd=sd | is_friday=wu
+  R_attr : 향후 첫날(horizon day1)에 공휴일(hol_kr_wd=1)이 명확히 있으므로 훈련에서 관찰된 수천~만 단위의 음의 잔차 패턴을 반영해 강한 하향 기여로 판단합니다. is_friday는 5일차에만 1로 예보되어 금요일 효과가 소폭 상향(수천명 수준)으로 기여할 근거가 있으나 극단적 수준은 아니므로 약한 상향으로 표시했습니다.
+  Ŷ_base mean=36055  Ŷ_calib mean=35513  gt=40602
+  R_calib: 1일차(hol_kr_wd=1)는 훈련에서 공휴일에 수천~만단위의 음의 잔차가 반복 관찰되어 보수적으로 약 −6,000명만 추가 하향 보정했습니다. 5일차(is_friday=1)는 금요일의 소폭 상향 신호이므로 과거 사례(유사한 약한 금요일 신호의 성공적 보정)를 반영해 약 +2,200명만 올려주었고, 다른 날들은 해당 채널들이 활성화되지 않아 Ŷ_base를 유지했습니다.
+  MAE base=7867 → calib=6696  verdict=better
+  retrieved(lb)=['2025-12-29', '2026-02-09', '2026-02-23']  retrieved(attr)=['2026-02-16', '2025-12-29', '2026-02-09']
+  R_reflect: 잔차가 7일 중 2~6일에 걸쳐 큰 양의 값(특히 3~5일차)에 몰려 있고, 1일차에는 큰 음의 잔차가 몰려 있습니다. hol_kr_wd는 오직 1일차에만 활성화되어 그 날의 큰 음의 잔차를 잘 설명하므로 strong_down이 맞고, is_friday는 5일차에만 활성화되지만 양의 잔차가 여러 날에 걸쳐 나타나므로 금요일 효과 하나만으로는 그 전체 양의 잔차를 설명할 수 없어 neutral로 내려야 합니다.
+  라벨 수정: is_friday: 5일:wu→··
+
+===== window 11/18 (2026-03-09) profile={'trend': 'rising', 'level': 'mid', 'volatility': 'high'} =====
+  attribution: hol_kr_wd=·· | is_friday=wu
+  R_attr : hol_kr_wd의 향후 7일 값은 모두 0이라 공휴일에 따른 하향 효과가 발생할 근거가 없어 모든 날을 neutral로 판정합니다. is_friday는 5일차에만 1로 예보되어 훈련에서 관찰된 수천명 수준의 플러스 효과를 부분적으로 기대할 수 있으므로 약한 상향(weak_up)으로 판단했고 나머지 날은 영향 근거가 없어 neutral입니다.
+  Ŷ_base mean=39584  Ŷ_calib mean=39870  gt=43195
+  R_calib: 5일차에만 is_friday가 1이라 그 날만 위로 소폭 조정했습니다. 과거 사례의 회고에서 금요일 보정은 일부 날에 소규모 플러스(수천명 단위)로 설명되는 경우가 많아 과잉 보정을 피해 보수적으로 약 +2,000명을 추가했습니다.
+  MAE base=3610 → calib=3325  verdict=better
+  retrieved(lb)=['2025-12-29', '2026-02-09', '2026-03-02']  retrieved(attr)=['2026-02-09', '2026-02-23', '2026-02-02']
+  R_reflect: 잔차가 5일차(7662)와 6일차(7522)에 크게 몰려 있고 다른 날들은 상대적으로 작습니다. hol_kr_wd는 다음 7일 모두 0으로 특이값이 없어 잔차를 설명하지 못하고, is_friday는 5일차에만 1이라 5일차의 플러스 잔차 일부를 설명할 수 있어 그날만 weak_up으로 둡니다. 6일차의 큰 잔차는 어떤 주어진 피처로 설명되지 않으므로 그 피처들에는 할당하지 않습니다.
+
+===== window 12/18 (2026-03-16) profile={'trend': 'rising', 'level': 'mid', 'volatility': 'high'} =====
+  attribution: hol_kr_wd=·· | is_friday=wu
+  R_attr : hol_kr_wd의 향후 7일 값이 모두 0으로 공휴일(홀일) 효과가 관측되지 않아 이번 window에서 유의한 하향 기여 근거가 없습니다. is_friday는 5일차에만 1로 나타나고 최근 수준이 높은 구간이므로 금요일의 플러스 효과(수천명 단위)가 일부 설명 가능해 약한 상향 기여로 판단합니다.
+  Ŷ_base mean=42520  Ŷ_calib mean=42806  gt=45497
+  R_calib: is_friday가 5일차에만 활성화되어 있고 과거 사례에서도 금요일의 약한 플러스(+수천명)를 그 하루에만 보수적으로 반영한 것이 타당했으므로 5일차만 상향 조정했습니다. hol_kr_wd는 모든 날 0이라 움직이지 않았고, 전체 궤적 모양을 유지하기 위해 다른 날들은 기준 예측을 그대로 두었습니다.
+  MAE base=3631 → calib=3346  verdict=better
+  retrieved(lb)=['2026-03-09', '2026-02-09', '2025-12-29']  retrieved(attr)=['2026-03-09', '2026-02-09', '2026-02-23']
+  R_reflect: 잔차가 주로 4~5일차에 큰 양(특히 5일차 9076, 4일차 6055)으로 몰려 있고 hol_kr_wd의 향후 값은 전부 0이라 그 피처로는 설명되지 않습니다. is_friday는 5일차에만 1으로 활성화되어 있어 5일차의 큰 잔차를 설명하므로 그날의 상향 라벨만 강화하는 것이 타당합니다.
+  라벨 수정: is_friday: 5일:wu→su
+
+===== window 13/18 (2026-03-23) profile={'trend': 'rising', 'level': 'high', 'volatility': 'low'} =====
+  attribution: hol_kr_wd=·· | is_friday=wu
+  R_attr : 향후 7일간 hol_kr_wd가 모두 0로 관측되어 공휴일에 의한 하향 효과를 기대할 근거가 없으므로 모두 neutral입니다. is_friday는 5일차에만 1로 나타나며, 훈련에서 금요일은 통상 수천명 단위의 상향 기여를 보였으나 단일 일 활성화이고 수준 불확실성이 있어 보수적으로 약한 상향(weak_up)으로 판단했습니다.
+  Ŷ_base mean=44002  Ŷ_calib mean=44288  gt=46438
+  R_calib: 5일차(is_friday가 활성화된 날)에만 약한 상향 보정을 적용했습니다. 과거 유사 사례의 회고에서 금요일 효과를 소폭(+약2천명)으로만 반영한 것이 더 나았으므로, 이번에도 보수적으로 Ŷ_base에서 +2000만 올려 전체 궤적을 크게 흔들지 않도록 했습니다.
+  MAE base=2690 → calib=2404  verdict=better
+  retrieved(lb)=['2025-12-29', '2026-02-09', '2026-03-02']  retrieved(attr)=['2026-02-09', '2026-03-09', '2026-03-16']
+  R_reflect: 잔차가 특정일(5일차)에 몰려 있지 않고 1~7일에 걸쳐 대체로 양수(특히 1,3,5,6일에 큰 값)를 보이며 금요일(5일차)만의 급등 패턴이 아닙니다. hol_kr_wd는 향후 7일 모두 0으로 해당 피처가 이번 잔차를 설명할 근거가 전혀 없고, is_friday는 5일차에만 1이지만 잔차가 여러 날에 걸쳐 분포하므로 금요일 활성화만으로 잔차를 설명하기 어렵습니다.
+  라벨 수정: is_friday: 5일:wu→··
+
+===== window 14/18 (2026-03-30) profile={'trend': 'rising', 'level': 'high', 'volatility': 'low'} =====
+  attribution: hol_kr_wd=·· | is_friday=wu
+  R_attr : hol_kr_wd은 향후 7일 모두 0으로 관측되어 이번 window의 잔차를 설명할 일관된 근거가 없어 모든 날짜에 neutral입니다. is_friday는 5일차에만 1이며, 훈련 지식상 금요일은 보통 예측보다 플러스로 기여하므로 이번에도 소폭 상향 기여가 있을 것으로 보이지만 수준이 극단적이지 않아 weak_up으로 판단합니다.
+  Ŷ_base mean=45994  Ŷ_calib mean=46279  gt=49698
+  R_calib: 5일차(is_friday=1)만 약한 상향 신호가 있으므로 그 날만 소폭(약 +2천) 상향 조정했습니다. 과거 사례에서 금요일의 기여는 수천명 단위로 나타났고 weak_up일 땐 보수적으로 +2천 전후가 적절했으므로 과잉반응을 피해 다른 날은 그대로 두었습니다.
+  MAE base=3704 → calib=3418  verdict=better
+  retrieved(lb)=['2025-12-29', '2026-03-23', '2026-02-09']  retrieved(attr)=['2026-02-09', '2026-03-09', '2026-03-16']
+  R_reflect: 잔차가 7일 내내 모두 양수이고 특히 중간(3~6일차)에 크게 몰려 있어 전반적인 수준 편향이 주요 원인입니다. hol_kr_wd는 향후 7일 모두 0으로 특이값이 없어 neutral로 둔 것이 맞고, is_friday는 5일차에만 1이라 그날의 일부 잔차를 설명할 수 있어 그날만 weak_up으로 두는 판단도 타당합니다.
+
+===== window 15/18 (2026-04-06) profile={'trend': 'rising', 'level': 'high', 'volatility': 'low'} =====
+  attribution: hol_kr_wd=·· | is_friday=wu
+  R_attr : hol_kr_wd의 향후 값이 모두 0이라 공휴일 영향이 관측될 근거가 전혀 없습니다. is_friday는 5일차에만 1로 나타나며, 훈련 지식에 따르면 금요일은 특히 수요가 높은 시기에 수천명 단위의 상향 잔차를 만드는 경향이 있어 이번 창(window)의 수준이 비교적 높은 편인 점을 고려해 약한 상향 기여로 판단했습니다.
+  Ŷ_base mean=48916  Ŷ_calib mean=49487  gt=45176
+  R_calib: 5일차에만 is_friday가 1로 나타나고 훈련 지식 및 유사 사례의 회고에서 금요일에는 수천명 단위의 상향 잔차가 반복적으로 관측되었으므로 해당 날짜만 보수적으로 상향 조정했습니다. 다른 날들은 hol_kr_wd가 모두 0이라 움직일 근거가 없고, 과거 reflect에서 금요일 효과만 부분적으로 설명하는 것이 바람직하다고 결론난 점을 반영하여 5일차만 약 +4,000명(기준값 대비 약 7.2%)으로 제한했습니다.
+  MAE base=3740 → calib=4311  verdict=worse
+  retrieved(lb)=['2025-12-29', '2026-02-09', '2026-03-23']  retrieved(attr)=['2026-02-09', '2026-02-23', '2026-03-09']
+  R_reflect: 잔차가 7일 내내 음수(모두 실제 < Ŷ_base)로 같은 방향으로 깔려 있어 특정일 이벤트가 아니라 Ŷ_base의 수준 편향으로 보입니다. hol_kr_wd는 향후 모두 0이라 설명 근거가 없고, is_friday는 5일차에만 1인데 과거 지식상 금요일은 상향 잔차를 만들므로 그날의 음성 잔차와 정반대여서 is_friday로 설명되지 않습니다. 따라서 원래의 상향 라벨은 근거가 부족합니다.
+  라벨 수정: is_friday: 5일:wu→··
+
+===== window 16/18 (2026-04-13) profile={'trend': 'flat', 'level': 'high', 'volatility': 'low'} =====
+  attribution: hol_kr_wd=·· | is_friday=wu
+  R_attr : hol_kr_wd의 향후 7일 값이 모두 0이므로(공휴일 없음) 이 변수가 이번 window의 잔차를 설명할 근거가 없습니다. is_friday는 5일차에만 1로 관측되어 금요일 효과가 소폭 상향 보정할 여지가 있으나, 최근 수치가 혼재하고 기준 예측(Ŷ_base)이 과거 패턴을 일부 반영했을 가능성도 있어 크기는 보수적으로 약한 상향으로 봅니다.
+  Ŷ_base mean=45132  Ŷ_calib mean=45489  gt=37603
+  R_calib: is_friday가 5일차에만 관측되므로 그 날만 보수적으로 상향 조정했습니다. 과거 reflect에서 금요일 효과를 과대반영해 악화된 사례가 있어 이번에는 낮은 수위(약 +2.5천명)로만 살짝 밀어 Ŷ_base의 일부 이미 반영된 효과를 넘지 않도록 했습니다.
+  MAE base=7530 → calib=7887  verdict=worse
+  retrieved(lb)=['2026-01-05', '2026-04-06', '2026-02-09']  retrieved(attr)=['2026-02-09', '2026-01-05', '2026-02-02']
+  R_reflect: 잔차가 7일 모두 음수로 특히 3~4일차에 큰 음수를 보이며 특정일에 잔차가 몰려 있지 않습니다. hol_kr_wd의 값은 지난 28일과 다음 7일 모두 0으로 특이치가 없어 원래의 neutral 판단이 옳았고, is_friday도 5일차에만 1이 있지만 잔차가 그날에 집중되지 않았으므로 약한 상향(weak_up)은 근거가 부족합니다.
+  라벨 수정: is_friday: 5일:wu→··
+
+===== window 17/18 (2026-04-20) profile={'trend': 'falling', 'level': 'high', 'volatility': 'low'} =====
+  attribution: hol_kr_wd=·· | is_friday=wu
+  R_attr : hol_kr_wd의 향후 7일 값은 모두 0이라 공휴일에 따른 하향 기여 근거가 없어 전부 neutral입니다. is_friday는 7일 중 5일차에만 1로 관측되며, 과거 지식에서 금요일은 보통 수천명 수준으로 수요를 올리는 경향이 있어 해당 하루에 소폭 상향 기여했다고 판단해 weak_up으로 표기합니다.
+  Ŷ_base mean=39685  Ŷ_calib mean=40042  gt=39298
+  R_calib: 5일차(is_friday=1)만 과거 지식상 소폭 상향 기여가 기대되므로 그날에만 보수적으로 +2,500명을 올려 보정했습니다. 유사 사례의 회고에서 특정일 신호에만 편중해 창을 넓게 조정해선 안 된다는 교훈(2026-01-12)과, 특정일 보정이 타당했던 경우(2026-01-19)를 반영해 한 날에만 완만하게 밀고(전체 구간 보정은 없음) 과대반응을 피했습니다.
+  MAE base=1406 → calib=1678  verdict=worse
+  retrieved(lb)=['2026-01-12', '2026-01-26', '2026-01-19']  retrieved(attr)=['2026-01-19', '2026-01-12', '2026-02-02']
+  R_reflect: hol_kr_wd는 향후 7일 모두 값이 0이라 잔차와 무관하므로 원래의 neutral 판단이 옳았습니다. is_friday는 5일차에만 1이었으나 그날의 잔차는 거의 0에 가깝고 잔차는 1일차(+2348)와 7일차(-4354) 등 다른 날에 크게 몰려 있어 금요일 신호가 잔차를 설명하지 못하므로 원래의 weak_up은 근거가 약합니다. 따라서 is_friday도 neutral로 내려야 합니다.
+  라벨 수정: is_friday: 5일:wu→··
+
+===== window 18/18 (2026-04-27) profile={'trend': 'falling', 'level': 'high', 'volatility': 'high'} =====
+  attribution: hol_kr_wd=·· | is_friday=wu
+  R_attr : hol_kr_wd의 향후 7일 값이 모두 0이라 과거 학습에서 관찰된 공휴일 하향효과와 연관지을 근거가 없습니다. is_friday는 5일차에만 1로 나타나며, 훈련에서 금요일은 대체로 예측보다 수천명 수준으로 플러스 기여를 하는 경향이 있으므로 그날만 소폭 상향(weak_up)으로 평가했습니다.
+  Ŷ_base mean=37819  Ŷ_calib mean=38248  gt=45717
+  R_calib: 5일차(is_friday=1)만 소폭 상향 조정했습니다. 훈련에서 금요일이 통상 수천명 수준의 플러스 잔차를 보였고(특히 수준이 높은 기간에 더 큼) hol_kr_wd는 모두 0이라 해당 채널은 중립이라 적용하지 않았습니다. 과거 reflect에서 금요일 보정을 과도하게 썼을 때 성과가 나빠진 사례를 반영해 과잉 보정은 피하고 보수적으로 약 +3,000명만 추가했습니다.
+  MAE base=8041 → calib=7613  verdict=better
+  retrieved(lb)=['2026-01-19', '2026-04-20', '2026-01-26']  retrieved(attr)=['2026-01-19', '2026-02-02', '2026-01-26']
+  R_reflect: 잔차가 3~6일차에 걸쳐 큰 플러스(특히 5~6일차)에 몰려 있어 단일일 이벤트보다는 몇일간의 상승이 주된 현상입니다. hol_kr_wd는 전 기간 모두 0이라 잔차를 설명할 근거가 없고, is_friday는 5일차에만 1이라 그날의 일부 상승을 설명할 수는 있어 5일차만 weak_up으로 두고 나머지는 neutral로 판단합니다.
+
+[store] → /work/fs-release/memory/exp_sig2_cap20/train_analysis.json
+[dist] 평균 MAE  base=4344  calib=4110  (-234, -5.4%)
+[dist] calib이 나은 window: 11/18
+[store] → memory/experience.json (18 cases)
+[usage] calls=54  in=122,213 tok  out=25,119 tok

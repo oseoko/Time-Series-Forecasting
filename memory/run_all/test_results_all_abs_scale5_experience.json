@@ -1,0 +1,1010 @@
+[
+  {
+    "date": "2026-05-04",
+    "attribution": {
+      "hotel_price": "strong_up",
+      "fx_usd": "neutral",
+      "fx_cny": "weak_up",
+      "fx_jpy": "weak_down",
+      "hol_cn": [
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "weak_up",
+        "weak_up"
+      ],
+      "hol_jp": [
+        "weak_up",
+        "weak_up",
+        "weak_up",
+        "neutral",
+        "neutral",
+        "weak_up",
+        "weak_up"
+      ],
+      "hol_us": [
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "weak_up",
+        "weak_up"
+      ],
+      "hol_kr": [
+        "neutral",
+        "weak_up",
+        "neutral",
+        "neutral",
+        "neutral",
+        "weak_up",
+        "weak_up"
+      ],
+      "hol_kr_wd": [
+        "neutral",
+        "strong_down",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral"
+      ],
+      "concert_cap": [
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral"
+      ],
+      "flight_cn": [
+        "weak_up",
+        "weak_up",
+        "weak_up",
+        "weak_up",
+        "weak_up",
+        "neutral",
+        "weak_up"
+      ],
+      "flight_jp": [
+        "weak_up",
+        "weak_up",
+        "weak_up",
+        "neutral",
+        "neutral",
+        "neutral",
+        "weak_up"
+      ],
+      "flight_us": [
+        "weak_up",
+        "neutral",
+        "weak_up",
+        "weak_up",
+        "weak_up",
+        "weak_up",
+        "weak_up"
+      ],
+      "flight_total": [
+        "neutral",
+        "weak_down",
+        "neutral",
+        "weak_down",
+        "weak_down",
+        "weak_down",
+        "neutral"
+      ],
+      "w_seoul_AVGTA": "weak_up",
+      "w_seoul_SUMRN": "neutral",
+      "w_seoul_AVGWS": "neutral",
+      "w_seoul_AVGRHM": "weak_up",
+      "w_seoul_AVGPS": "neutral",
+      "w_seoul_SUMGSR": "neutral",
+      "w_seoul_DDMES": "neutral",
+      "w_seoul_AVGTCA": "weak_up",
+      "is_friday": [
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "weak_up",
+        "neutral",
+        "neutral"
+      ]
+    },
+    "y_base": [
+      40699.890625,
+      41165.37109375,
+      41929.3984375,
+      44660.80859375,
+      45865.625,
+      41657.6875,
+      35575.703125
+    ],
+    "y_calib": [
+      42014.0,
+      35965.0,
+      43529.0,
+      44561.0,
+      46783.0,
+      43458.0,
+      37076.0
+    ],
+    "y_raw": [
+      42014.0,
+      35965.0,
+      43529.0,
+      44561.0,
+      46783.0,
+      43458.0,
+      37076.0
+    ],
+    "gt": [
+      29629.0,
+      20832.0,
+      36472.0,
+      39379.0,
+      38613.0,
+      37091.0,
+      36413.0
+    ],
+    "R_attr": "호텔요금이 최근 며칠(특히 마지막 7일)에 걸쳐 매우 높은 수준(50만 원대 초중반 이상)을 보여 전반 레벨을 올리는 강한 상향 신호로 판단했습니다. 향후 휴일(각국 hol_*)과 항공편(특히 중국·일본·미국발 편수)이 일부 일자에 몰려 있어 해당 날짜들에 약한 상향 보정이 적절하며, 한국의 평일공휴일(hol_kr_wd)은 과거 관찰에서 강한 하향 편향을 보였기에 그 날짜에는 strong_down으로 처리했습니다. 기온·습도·구름(AVGTCA 등)은 일부 극단값이 있어 약한 상향 보정을 추가했고, 환율(usd)은 안정적이라 기여가 없다고 봅니다.",
+    "R_calib": "2일차는 hol_kr_wd(평일 공휴일=1)의 강한 하향효과를 우선 반영해 기준을 크게 내렸고(호텔가 상향은 일부 상쇄), 6·7일차는 중국·일본·미국 휴일 표기가 겹치고 항공편도 활발한 날들이므로 약간씩 상향했습니다. 1·3일차는 hol_jp·항공편(중국·일본)과 호텔가격의 보수적 상향 신호를 약하게 밀었고, 4일차는 총편수가 하향 기여한 영향으로 소폭 하향, 5일차는 금요일·항공 신호로 완만한 상향을 적용해 전체 궤적을 부드럽게 유지했습니다.",
+    "mae_base": 7828.582589285715,
+    "mae_calib": 7851.0,
+    "rmse_base": 9767.640226523978,
+    "rmse_calib": 8998.233517117204,
+    "retrieved_lb": [
+      "2026-02-09",
+      "2026-03-23",
+      "2025-12-29"
+    ],
+    "retrieved_attr": [
+      "2025-12-29",
+      "2026-02-16",
+      "2026-03-02"
+    ]
+  },
+  {
+    "date": "2026-05-11",
+    "attribution": {
+      "hotel_price": "strong_up",
+      "fx_usd": "neutral",
+      "fx_cny": "weak_down",
+      "fx_jpy": "weak_down",
+      "hol_cn": [
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "strong_up",
+        "strong_up"
+      ],
+      "hol_jp": [
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "strong_up",
+        "strong_up"
+      ],
+      "hol_us": [
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "strong_up",
+        "strong_up"
+      ],
+      "hol_kr": [
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "strong_up",
+        "strong_up"
+      ],
+      "hol_kr_wd": [
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral"
+      ],
+      "concert_cap": [
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "strong_up",
+        "strong_up"
+      ],
+      "flight_cn": [
+        "weak_up",
+        "weak_down",
+        "weak_down",
+        "weak_up",
+        "weak_up",
+        "weak_up",
+        "weak_up"
+      ],
+      "flight_jp": [
+        "neutral",
+        "neutral",
+        "weak_up",
+        "neutral",
+        "weak_up",
+        "weak_up",
+        "weak_up"
+      ],
+      "flight_us": [
+        "weak_up",
+        "weak_up",
+        "weak_up",
+        "neutral",
+        "weak_up",
+        "neutral",
+        "weak_up"
+      ],
+      "flight_total": [
+        "weak_down",
+        "strong_down",
+        "strong_down",
+        "weak_down",
+        "weak_down",
+        "weak_down",
+        "neutral"
+      ],
+      "w_seoul_AVGTA": "weak_up",
+      "w_seoul_SUMRN": "neutral",
+      "w_seoul_AVGWS": "neutral",
+      "w_seoul_AVGRHM": "neutral",
+      "w_seoul_AVGPS": "neutral",
+      "w_seoul_SUMGSR": "weak_up",
+      "w_seoul_DDMES": "neutral",
+      "w_seoul_AVGTCA": "neutral",
+      "is_friday": [
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "weak_up",
+        "neutral",
+        "neutral"
+      ]
+    },
+    "y_base": [
+      36216.359375,
+      36516.38671875,
+      38021.62109375,
+      38875.421875,
+      38958.5859375,
+      38363.1796875,
+      37363.78515625
+    ],
+    "y_calib": [
+      35130.0,
+      35055.0,
+      36121.0,
+      37708.0,
+      38870.0,
+      45363.0,
+      46364.0
+    ],
+    "y_raw": [
+      35130.0,
+      35055.0,
+      36121.0,
+      37708.0,
+      38870.0,
+      45363.0,
+      46364.0
+    ],
+    "gt": [
+      40300.0,
+      36354.0,
+      37364.0,
+      41396.0,
+      42126.0,
+      40025.0,
+      34473.0
+    ],
+    "R_attr": "이번 윈도우에서 호텔요금이 전반적으로 높은 수준(여러 번 50만·60만대 피크)을 보이고 6–7일차에 대형 콘서트(66,000 수용)와 각국의 공휴일이 겹쳐 있어 이 기간에 강한 상향 기여가 합쳐질 가능성이 큽니다. 반면 총항공편수는 초중반(horizon 1–3일)에 평소보다 낮아 전반적 하향 압력(특히 2–3일차)을 주고, 원/엔·원/위안도 최근 약간 하락해 소폭 음의 기여로 판단했습니다. 기타 기상 변수와 원달러는 중간 범위라 별다른 체계적 기여 근거가 부족합니다.",
+    "R_calib": "2–4일차는 전체 항공편수(flight_total)와 중국·일본발 편수의 초중반 약세 신호를 반영해 기준예측을 소폭(-3~-5% 범위) 하향 조정했습니다. 5일차는 금요일(is_friday) 상승신호를 일부 반영해 하향폭을 줄였고, 6–7일차는 대형 콘서트(concert_cap)와 중국·일본·한국의 공휴일(hol_*)이 동시 발생하고 호텔요금 수준이 높은 점을 보수적으로 반영해 다른 일자보다 크게(단, 과도하지 않게) 상향 조정했습니다.",
+    "mae_base": 2163.4637276785716,
+    "mae_calib": 4555.0,
+    "rmse_base": 2525.274163381811,
+    "rmse_calib": 5657.540543381019,
+    "retrieved_lb": [
+      "2026-03-23",
+      "2026-01-05",
+      "2026-04-13"
+    ],
+    "retrieved_attr": [
+      "2026-03-30",
+      "2026-03-23",
+      "2026-02-02"
+    ]
+  },
+  {
+    "date": "2026-05-18",
+    "attribution": {
+      "hotel_price": "strong_up",
+      "fx_usd": "neutral",
+      "fx_cny": "weak_up",
+      "fx_jpy": "weak_up",
+      "hol_cn": [
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "weak_up",
+        "weak_up"
+      ],
+      "hol_jp": [
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "weak_up",
+        "weak_up"
+      ],
+      "hol_us": [
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "weak_up",
+        "weak_up"
+      ],
+      "hol_kr": [
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "weak_up",
+        "weak_up"
+      ],
+      "hol_kr_wd": [
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral"
+      ],
+      "concert_cap": [
+        "strong_up",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral"
+      ],
+      "flight_cn": [
+        "weak_up",
+        "weak_down",
+        "neutral",
+        "weak_up",
+        "weak_up",
+        "weak_up",
+        "weak_up"
+      ],
+      "flight_jp": [
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "weak_up",
+        "neutral",
+        "weak_up"
+      ],
+      "flight_us": [
+        "weak_up",
+        "neutral",
+        "weak_up",
+        "neutral",
+        "weak_up",
+        "neutral",
+        "weak_up"
+      ],
+      "flight_total": [
+        "neutral",
+        "weak_down",
+        "weak_down",
+        "weak_down",
+        "neutral",
+        "weak_down",
+        "neutral"
+      ],
+      "w_seoul_AVGTA": "strong_up",
+      "w_seoul_SUMRN": "neutral",
+      "w_seoul_AVGWS": "neutral",
+      "w_seoul_AVGRHM": "neutral",
+      "w_seoul_AVGPS": "neutral",
+      "w_seoul_SUMGSR": "weak_up",
+      "w_seoul_DDMES": "neutral",
+      "w_seoul_AVGTCA": "neutral",
+      "is_friday": [
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "weak_up",
+        "neutral",
+        "neutral"
+      ]
+    },
+    "y_base": [
+      35301.25,
+      35834.53515625,
+      37070.47265625,
+      38371.23046875,
+      38792.46484375,
+      38776.171875,
+      38496.04296875
+    ],
+    "y_calib": [
+      37066.0,
+      36193.0,
+      37811.0,
+      39138.0,
+      40344.0,
+      40715.0,
+      40421.0
+    ],
+    "y_raw": [
+      37066.0,
+      36193.0,
+      37811.0,
+      39138.0,
+      40344.0,
+      40715.0,
+      40421.0
+    ],
+    "gt": [
+      37493.0,
+      32472.0,
+      33361.0,
+      39114.0,
+      43643.0,
+      43703.0,
+      38784.0
+    ],
+    "R_attr": "호텔가격이 최근 고(특히 여러 일자가 50만 원대 이상)로 측정되어 전반적 상향 기여가 타당합니다. 향후 휴일(중국·일본·미국·한국)이 윈도우 끝 이틀에 겹치고 대형 콘서트(cap=66k)가 첫날에 예약되어 그 해당일들에 상향 기여를 배치했습니다. 항공편·총편수와 금요일 여부는 각 일자별 임계값과 지식에 따라 일부 날을 약하게 위/아래로 판단했고, 대부분의 기상·환율 피처는 특이성이 없어 neutral로 처리했습니다.",
+    "R_calib": "전체적으로 hotel_price와 높은 기온(w_seoul_AVGTA)의 상향 시그널을 보수적으로 반영해 윈도우 전반에 소폭 상향(약 +1~+2%)을 적용했고, future-known 이벤트(1일차 대형 콘서트, 6–7일의 다수국 공휴일)과 해당일에 활성화된 항공편 시그널은 그 날에 집중적으로 추가 보정했습니다. 과거 reflect에서 hotel_price와 기타 라벨을 과대반영해 성능이 악화된 사례가 있어 이번에는 hotel_price 기여를 과감히 줄이고 이벤트·항공·금요일(is_friday) 신호만 그 해당일에만 절제되어 반영하여 과잉 반응을 피했습니다.",
+    "mae_base": 2867.406808035714,
+    "mae_calib": 2363.714285714286,
+    "rmse_base": 3344.644987154659,
+    "rmse_calib": 2836.561298473911,
+    "retrieved_lb": [
+      "2026-01-05",
+      "2026-04-20",
+      "2026-01-12"
+    ],
+    "retrieved_attr": [
+      "2026-04-20",
+      "2026-03-23",
+      "2026-03-30"
+    ]
+  },
+  {
+    "date": "2026-05-25",
+    "attribution": {
+      "hotel_price": "strong_up",
+      "fx_usd": "neutral",
+      "fx_cny": "weak_up",
+      "fx_jpy": "weak_up",
+      "hol_cn": [
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "weak_up",
+        "weak_up"
+      ],
+      "hol_jp": [
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "weak_up",
+        "weak_up"
+      ],
+      "hol_us": [
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral"
+      ],
+      "hol_kr": [
+        "strong_down",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "weak_up",
+        "weak_up"
+      ],
+      "hol_kr_wd": [
+        "strong_down",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral"
+      ],
+      "concert_cap": [
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral"
+      ],
+      "flight_cn": [
+        "weak_up",
+        "weak_up",
+        "neutral",
+        "weak_down",
+        "weak_up",
+        "weak_up",
+        "weak_up"
+      ],
+      "flight_jp": [
+        "weak_up",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "weak_up"
+      ],
+      "flight_us": [
+        "weak_up",
+        "neutral",
+        "weak_up",
+        "neutral",
+        "weak_up",
+        "neutral",
+        "weak_up"
+      ],
+      "flight_total": [
+        "neutral",
+        "weak_down",
+        "weak_down",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral"
+      ],
+      "w_seoul_AVGTA": "weak_up",
+      "w_seoul_SUMRN": "neutral",
+      "w_seoul_AVGWS": "neutral",
+      "w_seoul_AVGRHM": "neutral",
+      "w_seoul_AVGPS": "neutral",
+      "w_seoul_SUMGSR": "weak_up",
+      "w_seoul_DDMES": "neutral",
+      "w_seoul_AVGTCA": "neutral",
+      "is_friday": [
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "weak_up",
+        "neutral",
+        "neutral"
+      ]
+    },
+    "y_base": [
+      38258.1484375,
+      37652.95703125,
+      38297.3828125,
+      39752.4375,
+      40064.55078125,
+      39440.0546875,
+      37792.7109375
+    ],
+    "y_calib": [
+      34758.0,
+      36153.0,
+      36797.0,
+      39752.0,
+      42068.0,
+      40940.0,
+      38993.0
+    ],
+    "y_raw": [
+      34758.0,
+      36153.0,
+      36797.0,
+      39752.0,
+      42068.0,
+      40940.0,
+      38993.0
+    ],
+    "gt": [
+      25804.0,
+      33433.0,
+      39332.0,
+      43141.0,
+      43590.0,
+      41615.0,
+      35689.0
+    ],
+    "R_attr": "호텔 평균요금이 최근 수일간 높게(특히 50만 원대 이상) 유지되어 전형적인 상향기여 패턴을 보이므로 strong_up으로 판단했습니다. 환율(USD)은 과거와의 일관된 방향성이 없어 neutral로 두었고, CNY·JPY는 현재 수준(높은 편)이어서 소폭 상방(weak_up) 기여가 유력합니다. 항공편 수와 일부 공휴일(특히 중국·일본의 6~7일 휴일)은 소폭 상방 영향을 줄 가능성이 있어 weak_up으로, 총항공편 수의 중간~저항 구간(특히 2~3일)은 약한 하방기여로 표기했고, 한국의 평일 공휴일(hol_kr_wd)은 훈련지식상 강한 하향효과가 있어 해당일에 strong_down으로 반영했습니다.",
+    "R_calib": "1일차는 hol_kr_wd(평일 공휴일)와 hol_kr의 강한 하향 신호가 동시에 있어 강하게 보수적으로 낮춰 조정했습니다(호텔요금은 과거 반성 사례를 반영해 더이상 전체 상향으로 반영하지 않았습니다). 2–3일차는 flight_total의 하향(wd) 신호가 있어 소폭(±5% 이내) 하향했고, 5일차는 금요일(is_friday)과 낮은 미국발 편수(flight_us)에 따른 상향 신호를 제한적으로 반영했습니다. 6–7일차는 중국·일본·미국·한국의 휴일과 항공편 증가 신호들이 겹치므로 완만한 상향을 적용하되 과거 사례의 과대반응을 피해 과격하게 넘기지 않았습니다.",
+    "mae_base": 4128.770089285715,
+    "mae_calib": 3299.8571428571427,
+    "rmse_base": 5438.637148152684,
+    "rmse_calib": 4126.094434900187,
+    "retrieved_lb": [
+      "2026-01-12",
+      "2026-02-02",
+      "2026-01-19"
+    ],
+    "retrieved_attr": [
+      "2026-03-23",
+      "2026-02-16",
+      "2026-04-20"
+    ]
+  },
+  {
+    "date": "2026-06-01",
+    "attribution": {
+      "hotel_price": "strong_up",
+      "fx_usd": "neutral",
+      "fx_cny": "weak_up",
+      "fx_jpy": "weak_up",
+      "hol_cn": [
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "weak_up",
+        "weak_up"
+      ],
+      "hol_jp": [
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "weak_up",
+        "weak_up"
+      ],
+      "hol_us": [
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "weak_up",
+        "weak_up"
+      ],
+      "hol_kr": [
+        "neutral",
+        "neutral",
+        "weak_up",
+        "neutral",
+        "neutral",
+        "weak_up",
+        "weak_up"
+      ],
+      "hol_kr_wd": [
+        "neutral",
+        "neutral",
+        "strong_down",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral"
+      ],
+      "concert_cap": [
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral"
+      ],
+      "flight_cn": [
+        "weak_up",
+        "weak_up",
+        "weak_up",
+        "neutral",
+        "weak_up",
+        "weak_up",
+        "weak_up"
+      ],
+      "flight_jp": [
+        "neutral",
+        "neutral",
+        "weak_up",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral"
+      ],
+      "flight_us": [
+        "weak_up",
+        "neutral",
+        "weak_up",
+        "neutral",
+        "weak_up",
+        "neutral",
+        "weak_up"
+      ],
+      "flight_total": [
+        "weak_down",
+        "weak_down",
+        "weak_down",
+        "weak_down",
+        "weak_down",
+        "weak_down",
+        "weak_down"
+      ],
+      "w_seoul_AVGTA": "weak_up",
+      "w_seoul_SUMRN": "neutral",
+      "w_seoul_AVGWS": "neutral",
+      "w_seoul_AVGRHM": "weak_up",
+      "w_seoul_AVGPS": "neutral",
+      "w_seoul_SUMGSR": "weak_up",
+      "w_seoul_DDMES": "neutral",
+      "w_seoul_AVGTCA": "neutral",
+      "is_friday": [
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "weak_up",
+        "neutral",
+        "neutral"
+      ]
+    },
+    "y_base": [
+      32989.52734375,
+      33280.69140625,
+      38339.98828125,
+      40850.2578125,
+      40912.09765625,
+      40024.8515625,
+      37411.4140625
+    ],
+    "y_calib": [
+      33650.0,
+      33780.0,
+      33840.0,
+      40442.0,
+      42139.0,
+      41626.0,
+      38907.0
+    ],
+    "y_raw": [
+      33650.0,
+      33780.0,
+      33840.0,
+      40442.0,
+      42139.0,
+      41626.0,
+      38907.0
+    ],
+    "gt": [
+      36588.0,
+      34330.0,
+      30429.0,
+      41601.0,
+      47363.0,
+      38962.0,
+      33038.0
+    ],
+    "R_attr": "호텔 평균가가 최근 윈도우에서 전반적으로 높아(일별 수십만 원대 중상위) 강한 상향기여가 예상됩니다. 항공편(특히 중국·일본발)은 대체로 평소보다 높아 약한 상향 신호를 주고, 전체 항공편 수는 오히려 낮은 편에 속해 약한 하향 압력으로 작용합니다. 미래에 걸린 각국 공휴일(특히 6~7일차)과 한국 평일공휴(hol_kr_wd)는 해당 일자에 국한해 영향이 있어 그 날짜들만 표시했습니다.",
+    "R_calib": "전반적으로 hotel_price의 강한 상향 시그널은 과거 사례에서 과대반영된 전력이 있어(유사사례 reflect 반영) 전체 수준 보정은 보수적으로 미미하게만 반영했고, flight/total의 약한 하향 신호와 상쇄하여 1~2일차는 소폭(≈+1.5–2%)만 올렸습니다. 3일차는 hol_kr_wd(평일 공휴일, SD)의 일관된 하향효과가 훈련에서 강하게 관찰되어 해당 일자에 한해 비교적 큰 하향(-4.5k)을 적용했고, 5일차는 금요일(is_friday)에 따라 소폭 상향(+3%), 6–7일차는 중국·일본·미국 휴일(hol_cn/hol_jp/hol_us)과 일본·중국 항공 신호가 겹쳐 보수적 범위 내(+4%)로 올려 배치했습니다.",
+    "mae_base": 3599.5256696428573,
+    "mae_calib": 3116.4285714285716,
+    "rmse_base": 4457.224447943943,
+    "rmse_calib": 3600.4916132582307,
+    "retrieved_lb": [
+      "2026-03-16",
+      "2026-03-30",
+      "2026-02-09"
+    ],
+    "retrieved_attr": [
+      "2026-02-16",
+      "2025-12-29",
+      "2026-03-02"
+    ]
+  },
+  {
+    "date": "2026-06-08",
+    "attribution": {
+      "hotel_price": "strong_up",
+      "fx_usd": "neutral",
+      "fx_cny": "weak_up",
+      "fx_jpy": "weak_up",
+      "hol_cn": [
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "weak_up",
+        "weak_up"
+      ],
+      "hol_jp": [
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "weak_up",
+        "weak_up"
+      ],
+      "hol_us": [
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "weak_up",
+        "weak_up"
+      ],
+      "hol_kr": [
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "weak_up",
+        "weak_up"
+      ],
+      "hol_kr_wd": [
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral"
+      ],
+      "concert_cap": [
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "strong_up",
+        "strong_up",
+        "neutral"
+      ],
+      "flight_cn": [
+        "weak_up",
+        "neutral",
+        "weak_up",
+        "neutral",
+        "weak_up",
+        "weak_up",
+        "weak_up"
+      ],
+      "flight_jp": [
+        "neutral",
+        "weak_down",
+        "weak_down",
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral"
+      ],
+      "flight_us": [
+        "weak_up",
+        "neutral",
+        "weak_up",
+        "neutral",
+        "weak_up",
+        "neutral",
+        "neutral"
+      ],
+      "flight_total": [
+        "weak_down",
+        "weak_down",
+        "weak_down",
+        "weak_down",
+        "weak_down",
+        "weak_down",
+        "weak_down"
+      ],
+      "w_seoul_AVGTA": "weak_up",
+      "w_seoul_SUMRN": "neutral",
+      "w_seoul_AVGWS": "neutral",
+      "w_seoul_AVGRHM": "neutral",
+      "w_seoul_AVGPS": "neutral",
+      "w_seoul_SUMGSR": "neutral",
+      "w_seoul_DDMES": "neutral",
+      "w_seoul_AVGTCA": "neutral",
+      "is_friday": [
+        "neutral",
+        "neutral",
+        "neutral",
+        "neutral",
+        "weak_up",
+        "neutral",
+        "neutral"
+      ]
+    },
+    "y_base": [
+      30995.2734375,
+      32878.68359375,
+      36975.66015625,
+      41720.51953125,
+      43010.109375,
+      39957.01171875,
+      34286.4609375
+    ],
+    "y_calib": [
+      31495.0,
+      32579.0,
+      37776.0,
+      41721.0,
+      47010.0,
+      43457.0,
+      35986.0
+    ],
+    "y_raw": [
+      31495.0,
+      32579.0,
+      37776.0,
+      41721.0,
+      47010.0,
+      43457.0,
+      35986.0
+    ],
+    "gt": [
+      41465.0,
+      39722.0,
+      41521.0,
+      48658.0,
+      47779.0,
+      43205.0,
+      38028.0
+    ],
+    "R_attr": "호텔 평균요금이 최근 수일간 48만 원대 이상으로 높게 유지되어 전체 레벨 편향으로 입국자 수를 위로 크게 당길 가능성이 큽니다. 중국·일본·미국·한국의 공휴일이 6–7일차에 몰려 있고 대형 콘서트(5·6일차 50k)가 예정돼 있어 해당 날짜들에는 추가 상향(콘서트는 강한 기여, 공휴일은 약한 상승)을 부여했습니다. 항공편수는 중국·일본·미국 노선별로 일별 편차가 있어 일부 날짜에서 소폭 보정(보통 약한 상/하향)만 주었고, 기상 계열은 최근값이 극단적이지 않아 대부분 neutral로 판단했습니다.",
+    "R_calib": "5–6일차에 대형 콘서트(50k)와 6–7일의 다국적 공휴일이 겹쳐 특정일 상승이 뚜렷하므로 그날들에 대해 보수적으로 그러나 의미있게 상향 조정했습니다(콘서트·공휴일 신호는 특정일에만 배치). hotel_price의 strong_up은 전체 레벨 편향을 시사하지만 유사 사례의 회고에서 특정일에 잔차가 몰린 경우 hotel_price를 과도하게 적용해 악화된 적이 있어 이번에는 전체에 걸친 대규모 상향은 억제하고 주요 이벤트일에만 추가 보정을 집중했습니다.",
+    "mae_base": 5793.46875,
+    "mae_calib": 4408.285714285715,
+    "rmse_base": 6239.571453961071,
+    "rmse_calib": 5572.829135316152,
+    "retrieved_lb": [
+      "2026-04-06",
+      "2026-03-23",
+      "2026-02-09"
+    ],
+    "retrieved_attr": [
+      "2026-03-23",
+      "2026-04-06",
+      "2026-03-30"
+    ]
+  }
+]

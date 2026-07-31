@@ -1,0 +1,661 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body><title>방한 외국인 입국자 수요 — 6주 검증 리포트</title>
+<style>
+  :root{
+    --bg:#f6f7f8; --card:#ffffff; --ink:#1a1d21; --body:#4a5158; --mut:#8b939b;
+    --line:#e2e6e9; --line2:#eef1f3;
+    --fc:#0d7a72;          /* 예측 — 딥 틸 */
+    --gt:#1a1d21;          /* 실제 — 잉크 */
+    --base:#a8b0b7;        /* 기준값 — 회색 점선 (참조선, 후퇴) */
+    --ctx:#6b7480;         /* 과거 실적 — 기준값보다 진한 회색. 둘을 같은 색으로 두면 구분이 안 된다 */
+    --down:#a8443c;        /* 하향 요인 — 벽돌 */
+    --up:#b98229;          /* 상향 요인 — 앰버 */
+    --sans:system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,monospace;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{--bg:#14171a; --card:#1b1f23; --ink:#eef1f3; --body:#b4bcc3; --mut:#79828a;
+          --line:#2b3238; --line2:#22282d; --fc:#4fb3a8; --gt:#eef1f3; --base:#5d666e; --ctx:#98a2ac;
+          --down:#d9756a; --up:#d9a84f;}
+  }
+  :root[data-theme="dark"]{--bg:#14171a; --card:#1b1f23; --ink:#eef1f3; --body:#b4bcc3; --mut:#79828a;
+    --line:#2b3238; --line2:#22282d; --fc:#4fb3a8; --gt:#eef1f3; --base:#5d666e; --ctx:#98a2ac;
+    --down:#d9756a; --up:#d9a84f;}
+  :root[data-theme="light"]{--bg:#f6f7f8; --card:#ffffff; --ink:#1a1d21; --body:#4a5158; --mut:#8b939b;
+    --line:#e2e6e9; --line2:#eef1f3; --fc:#0d7a72; --gt:#1a1d21; --base:#a8b0b7; --ctx:#6b7480;
+    --down:#a8443c; --up:#b98229;}
+
+  body{margin:0;background:var(--bg);color:var(--body);font-family:var(--sans);
+    font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+  /* 본문 폭 = 컨테이너 폭. 컨테이너를 넓게 두고 글에만 max-width를 걸면 오른쪽이 휑하게 빈다. */
+  .wrap{max-width:760px;margin:0 auto;padding:48px 24px 72px;display:flex;flex-direction:column;gap:40px}
+  h1,h2,h3{color:var(--ink);text-wrap:balance;margin:0}
+  h1{font-size:30px;font-weight:700;letter-spacing:-.025em;line-height:1.25}
+  h2{font-size:19px;font-weight:650;letter-spacing:-.015em}
+  h3{font-size:15px;font-weight:650}
+  p{margin:0}
+  .eyebrow{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.08em;
+    color:var(--mut);margin-bottom:10px}
+  .sub{margin-top:12px;font-size:16px;color:var(--body)}
+  header{border-bottom:1px solid var(--line);padding-bottom:32px}
+
+  section{display:flex;flex-direction:column;gap:18px}
+  .shd{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .shd .n{font-family:var(--mono);font-size:11px;color:var(--mut);letter-spacing:.06em}
+
+  /* KPI */
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;
+    background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  .kpi{background:var(--card);padding:16px 18px}
+  .kpi .v{font-family:var(--mono);font-size:24px;font-weight:600;color:var(--ink);
+    font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1.2}
+  .kpi .l{font-size:12px;color:var(--mut);margin-top:3px}
+
+  /* 동인 */
+  .drv{display:flex;flex-direction:column;gap:1px;background:var(--line);
+    border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  .drow{background:var(--card);padding:14px 18px;display:grid;
+    grid-template-columns:1fr 130px 96px;gap:14px;align-items:center}
+  .dnm{min-width:0}
+  .dnm b{display:block;color:var(--ink);font-size:14.5px;font-weight:600}
+  .dnm span{font-size:12.5px;color:var(--mut)}
+  .dbar{position:relative;height:22px}
+  .dbar i{position:absolute;top:4px;height:14px;border-radius:2px}
+  .dbar .zero{position:absolute;top:0;bottom:0;width:1px;background:var(--line);left:50%}
+  .dval{font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums;
+    text-align:right;color:var(--ink);font-weight:600}
+  .dval em{display:block;font-style:normal;font-size:11px;color:var(--mut);font-weight:400}
+  .strong .dval{color:var(--down)}
+
+  .nf{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:16px 18px}
+  .nf b{color:var(--ink);font-size:13.5px}
+  .nf ul{margin:8px 0 0;padding-left:18px;font-size:13.5px;color:var(--body)}
+  .nf li{margin-bottom:2px}
+  .nf .tail{margin-top:10px;font-size:13px;color:var(--mut)}
+
+  /* 주별 카드 */
+  .wk{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .whd{display:flex;align-items:baseline;gap:12px;padding:15px 18px;border-bottom:1px solid var(--line2)}
+  .whd b{font-family:var(--mono);font-size:14px;color:var(--ink);font-variant-numeric:tabular-nums}
+  .whd .acc{margin-left:auto;font-family:var(--mono);font-size:11.5px;color:var(--mut);
+    font-variant-numeric:tabular-nums}
+  .whd .acc s{text-decoration:none;color:var(--fc);font-weight:600}
+  .wbody{padding:16px 18px;display:flex;flex-direction:column;gap:14px}
+  .lg{display:flex;gap:14px;font-size:11.5px;color:var(--mut);font-family:var(--mono)}
+  .lg i{display:inline-block;width:14px;height:2px;vertical-align:3px;margin-right:5px}
+  .chart{width:100%;overflow-x:auto}
+  .chart svg{display:block}
+  /* 설명 = 근거 원문의 정리본임을 밝힌다 */
+  .ehd{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;
+    color:var(--fc);font-weight:700;margin-bottom:-6px}
+  .ehd span{display:block;text-transform:none;letter-spacing:0;color:var(--mut);
+    font-weight:400;font-size:11px;margin-top:3px;line-height:1.5}
+  .orig{font-size:12.5px;color:var(--mut);line-height:1.6;
+    border-left:2px solid var(--line);padding-left:10px}
+  .orig b{color:var(--body)}
+  .esum{font-size:14.5px;color:var(--ink);line-height:1.7}
+  .edrv{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:5px}
+  .edrv li{font-size:13.5px;color:var(--body);padding-left:13px;position:relative}
+  .edrv li::before{content:"";position:absolute;left:0;top:9px;width:5px;height:5px;
+    border-radius:50%;background:var(--mut)}
+  .edrv li.up::before{background:var(--up)} .edrv li.dn::before{background:var(--down)}
+  .edrv b{font-family:var(--mono);font-size:12.5px;color:var(--ink);
+    font-variant-numeric:tabular-nums;margin-right:5px}
+  .ecav{font-size:13px;color:var(--mut);border-top:1px solid var(--line2);padding-top:11px}
+
+  /* 증거 ① 날짜별 판정 */
+  .pdwrap{background:var(--card);border:1px solid var(--line);border-radius:8px;
+    padding:16px 18px;overflow-x:auto}
+  table.pd{border-collapse:collapse;width:100%;font-size:12.5px}
+  table.pd th{font-family:var(--mono);font-size:10.5px;font-weight:500;color:var(--mut);
+    padding:0 0 8px;text-align:center;white-space:nowrap}
+  table.pd th.wknd{color:var(--body)}
+  table.pd th:first-child{text-align:left;padding-right:14px}
+  table.pd td{padding:4px 3px;text-align:center;white-space:nowrap}
+  table.pd td:first-child{text-align:left;color:var(--ink);font-weight:600;
+    padding-right:14px;white-space:nowrap}
+  .pdc{display:block;border-radius:4px;padding:4px 2px;font-size:11px;
+    font-family:var(--mono);color:var(--mut);background:var(--line2)}
+  .pdc.d2{background:color-mix(in srgb,var(--down) 82%,transparent);color:#fff;font-weight:600}
+  .pdc.d1{background:color-mix(in srgb,var(--down) 32%,transparent);color:var(--ink)}
+  .pdc.u1{background:color-mix(in srgb,var(--up) 32%,transparent);color:var(--ink)}
+  .pdc.u2{background:color-mix(in srgb,var(--up) 82%,transparent);color:#fff;font-weight:600}
+  table.wk{border-collapse:collapse;width:100%;max-width:440px;font-size:13px}
+  table.wk th{font-family:var(--mono);font-size:10.5px;font-weight:500;color:var(--mut);
+    text-align:right;padding:4px 12px 8px;border-bottom:1px solid var(--line)}
+  table.wk th:first-child{text-align:left}
+  table.wk td{padding:6px 12px;text-align:right;border-bottom:1px solid var(--line2);
+    font-family:var(--mono)}
+  table.wk td:first-child{text-align:left;font-weight:600;color:var(--ink);font-family:var(--sans)}
+  .wkgood{color:var(--fc);font-weight:600}
+  .wkbad{color:var(--down);font-weight:600}
+  .wkflat{color:var(--mut)}
+
+  /* 증거 ② 회고 → 판단 연쇄 */
+  .chain{display:flex;flex-direction:column;gap:0}
+  .cbox{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:15px 18px}
+  .cbox .clab{font-family:var(--mono);font-size:10.5px;text-transform:uppercase;
+    letter-spacing:.06em;color:var(--mut);margin-bottom:6px}
+  .cbox .clab b{color:var(--ink);font-weight:600}
+  .cbox p{font-size:13.5px;line-height:1.7;color:var(--body)}
+  .cbox.now{border-color:var(--fc)}
+  .cbox.now .clab b{color:var(--fc)}
+  .carrow{align-self:center;font-family:var(--mono);font-size:11px;color:var(--mut);
+    padding:8px 0;display:flex;flex-direction:column;align-items:center;gap:2px}
+  .carrow em{font-style:normal;font-size:20px;line-height:1;color:var(--line)}
+  mark{background:color-mix(in srgb,var(--fc) 20%,transparent);color:var(--ink);
+    padding:1px 2px;border-radius:2px}
+
+  /* 그룹 제목 */
+  .gh{margin-top:6px;font-size:13px;font-weight:650;color:var(--ink)}
+  .note{font-size:13px;color:var(--mut);line-height:1.7}
+  .dim{color:var(--mut)}
+
+  /* 전 과정 — 눌러서 여는 버튼임이 보이게 */
+  details.pr{border-top:1px solid var(--line2);margin-top:4px;padding-top:14px}
+  details.pr>summary{cursor:pointer;list-style:none;font-size:13px;font-weight:600;
+    color:var(--fc);display:inline-flex;align-items:center;gap:8px;
+    padding:8px 14px;border:1px solid var(--fc);border-radius:7px;
+    background:color-mix(in srgb,var(--fc) 7%,transparent);
+    transition:background .12s,transform .12s;user-select:none}
+  details.pr>summary::-webkit-details-marker{display:none}
+  details.pr>summary::before{content:"＋";font-family:var(--mono);font-size:13px;line-height:1}
+  details.pr[open]>summary::before{content:"−"}
+  details.pr>summary:hover{background:color-mix(in srgb,var(--fc) 15%,transparent)}
+  details.pr>summary:active{transform:translateY(1px)}
+  details.pr>summary:focus-visible{outline:2px solid var(--fc);outline-offset:2px}
+  details.pr[open]>summary{background:color-mix(in srgb,var(--fc) 15%,transparent)}
+  .prb{padding-top:16px;display:flex;flex-direction:column;gap:14px}
+  .fld{display:flex;flex-direction:column;gap:6px}
+  .flab{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;
+    color:var(--mut)}
+  .fld p{font-size:13.5px;line-height:1.7;color:var(--body)}
+  .mnum{font-family:var(--mono);font-size:11px;color:var(--mut);line-height:1.6;
+    font-variant-numeric:tabular-nums;word-break:break-all}
+  .none{font-size:13px;color:var(--mut)}
+
+  .chips{display:flex;flex-wrap:wrap;gap:5px}
+  .chip{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;color:var(--body);
+    background:var(--line2);border-radius:5px;padding:2px 7px;white-space:nowrap}
+  .chip b{font-weight:600;color:var(--ink)}
+  .chip i{font-style:normal;font-size:10px;color:var(--mut)}
+  .chip s{text-decoration:line-through;color:var(--mut)}
+  .chip.o-2{background:color-mix(in srgb,var(--down) 26%,transparent)}
+  .chip.o-1{background:color-mix(in srgb,var(--down) 13%,transparent)}
+  .chip.o1{background:color-mix(in srgb,var(--up) 13%,transparent)}
+  .chip.o2{background:color-mix(in srgb,var(--up) 26%,transparent)}
+  .chip.fix b{color:var(--fc)}
+
+  /* 검색된 사례 카드 (중첩 접힘) */
+  .csl{display:flex;flex-direction:column;gap:6px}
+  details.cs{border:1px solid var(--line);border-radius:7px;background:var(--bg);
+    transition:border-color .12s}
+  details.cs:hover{border-color:var(--fc)}
+  details.cs>summary{padding:9px 12px;cursor:pointer;list-style:none;display:flex;
+    align-items:center;gap:9px;font-size:12.5px;user-select:none}
+  details.cs>summary::-webkit-details-marker{display:none}
+  details.cs>summary::before{content:"＋";font-family:var(--mono);font-size:12px;
+    color:var(--mut);line-height:1}
+  details.cs[open]>summary::before{content:"−";color:var(--fc)}
+  details.cs>summary b{font-family:var(--mono);color:var(--ink);font-weight:600}
+  details.cs>summary:focus-visible{outline:2px solid var(--fc);outline-offset:-2px;border-radius:6px}
+  .vd{font-size:11px;color:var(--mut)}
+  .vd.up{color:var(--fc)} .vd.dn{color:var(--down)}
+  .tog{margin-left:auto;font-size:10.5px;color:var(--mut);font-family:var(--mono);
+    border:1px solid var(--line);border-radius:5px;padding:1px 7px}
+  .tog::after{content:"펼치기"}
+  details.cs[open] .tog::after{content:"접기"}
+  details.cs:hover .tog{border-color:var(--fc);color:var(--fc)}
+  .csb{padding:2px 12px 12px;display:flex;flex-direction:column;gap:11px;
+    border-top:1px solid var(--line2);margin-top:2px;padding-top:11px}
+  /* 카드 안 히트맵 — 좁으니 여백을 줄인다 */
+  .csb .pdwrap,.prb .pdwrap{padding:10px 12px}
+  .csb table.pd,.prb table.pd{font-size:11.5px}
+  .csb table.pd td:first-child,.prb table.pd td:first-child{font-size:12px;font-weight:600}
+  .rw{font-style:normal;font-size:9.5px;color:var(--mut);font-weight:400;margin-left:5px;
+    font-family:var(--mono)}
+  .qt{font-size:11.5px;color:var(--mut);margin-top:6px}
+  /* 요인명 → knowledge 팝오버 버튼 */
+  .kbtn{font:inherit;color:var(--ink);font-weight:600;background:none;border:0;padding:0;
+    cursor:pointer;display:inline-flex;align-items:center;gap:5px;text-align:left;
+    text-decoration:underline;text-decoration-style:dotted;text-decoration-color:var(--fc);
+    text-underline-offset:3px}
+  .kbtn:hover{color:var(--fc)}
+  .kbtn:focus-visible{outline:2px solid var(--fc);outline-offset:2px;border-radius:3px}
+  /* '지식' 배지 — 눌러서 근거를 볼 수 있는 버튼임이 드러나게 */
+  .ki{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:700;
+    letter-spacing:.02em;color:var(--fc);background:color-mix(in srgb,var(--fc) 12%,transparent);
+    border:1px solid color-mix(in srgb,var(--fc) 35%,transparent);border-radius:4px;
+    padding:1px 5px;font-family:var(--sans);white-space:nowrap;flex:none}
+  .kbtn:hover .ki{background:color-mix(in srgb,var(--fc) 22%,transparent);border-color:var(--fc)}
+  .kpop{position:absolute;z-index:50;max-width:368px;background:var(--card);
+    border:1px solid var(--fc);border-radius:9px;padding:13px 15px;
+    box-shadow:0 8px 28px rgba(0,0,0,.16)}
+  .kpop .khd{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.05em;
+    color:var(--fc);font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:7px}
+  .kpop .khd span{text-transform:none;letter-spacing:0;color:var(--mut);font-weight:400}
+  .kpop .kx{margin-left:auto;background:none;border:0;color:var(--mut);cursor:pointer;
+    font-size:12px;padding:0 2px}
+  .kpop .kx:hover{color:var(--ink)}
+  .kpop p{font-size:12.5px;line-height:1.65;color:var(--body);margin:0}
+
+  .mini{display:flex;flex-direction:column;gap:6px}
+  .mlab{font-size:10.5px;color:var(--mut);font-family:var(--mono)}
+  /* 범례 — 계열이 둘 이상이면 색만으로 구분하게 두지 않는다 */
+  .mlg{display:flex;flex-wrap:wrap;gap:12px;font-size:10.5px;color:var(--mut);
+    font-family:var(--mono)}
+  .mlg span{display:inline-flex;align-items:center;gap:5px}
+  .mlg i{width:14px;height:2px;border-radius:1px;flex:none}
+  .mlg i.ds{height:0;border-top:2px dashed currentColor;background:none!important;
+    color:var(--base)}
+
+  details.mth{background:var(--card);border:1px solid var(--line);border-radius:8px}
+  details.mth summary{padding:14px 18px;cursor:pointer;color:var(--ink);font-weight:600;font-size:14px;
+    list-style:none;display:flex;align-items:center}
+  details.mth summary::-webkit-details-marker{display:none}
+  details.mth summary::after{content:"펼치기";margin-left:auto;font-family:var(--mono);
+    font-size:11px;color:var(--mut);font-weight:400}
+  details.mth[open] summary::after{content:"접기"}
+  details.mth summary:focus-visible{outline:2px solid var(--fc);outline-offset:-2px}
+  .mbody{padding:0 18px 16px;font-size:13.5px;line-height:1.75;display:flex;
+    flex-direction:column;gap:10px}
+  /* 66ch로 묶어두면 760px 본문 안에서 절반 남짓만 쓰고 접혀 답답해 보인다 — 블록 폭을 그대로 쓴다 */
+  .mbody p{max-width:none}
+  .mbody code{font-family:var(--mono);font-size:12.5px;color:var(--ink)}
+  footer{border-top:1px solid var(--line);padding-top:20px;font-size:12.5px;color:var(--mut);
+    font-family:var(--mono)}
+  @media (max-width:620px){
+    .drow{grid-template-columns:1fr 78px}
+    .dbar{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">수요 예측 검증 · 2026년 5–6월 6주</div>
+    <h1>방한 외국인 입국자 수요는 무엇으로 설명되는가</h1>
+    <p class="sub">일별 외국인 입국자 수를 7일 앞까지 예측하고, 예측이 빗나간 몫을 달력·이벤트·경제
+      지표로 설명한 결과입니다. 아래 6주는 <b>모델이 학습에 쓰지 않은 구간</b>이며, 예측한 뒤 실제와
+      대조했습니다.</p>
+  </header>
+
+  <section>
+    <div class="shd"><h2>요약</h2></div>
+    <div class="kpis" id="kpis"></div>
+    <p class="prose" id="kpinote"></p>
+  </section>
+
+  <section>
+    <div class="shd"><h2>수요를 움직이는 것</h2></div>
+    <p>기준 예측은 <b>과거 입국자 수만</b> 보고 만듭니다. 따라서 실제가 기준에서 벗어난 몫은 달력·이벤트가
+      만들어낸 것입니다. 아래 수치는 그 몫을 요인별로 갈라낸 것으로, <b>하루 평균 몇 명을 움직였는지</b>와
+      <b>일별 변동폭(±<span id="sd"></span>명) 대비 크기</b>입니다.</p>
+    <p class="note">오른쪽의 <b>영향 큼 · 영향 보통</b>은 그 요인이 하루 수요를 얼마나 크게 흔드는지를
+      뜻합니다. 한 번에 크게 흔드는 요인만 쓸모 있는 것은 아닙니다 — 크기는 보통이어도 <b>매주 어김없이
+      반복되는</b> 요인은 예측 정확도를 크게 끌어올립니다.</p>
+
+    <div id="grp1"><h3 class="gh">확인된 요인</h3>
+    <div class="drv" id="drv1"></div></div>
+
+    <div id="grp2"><h3 class="gh">모델이 쓰지만, 확인되지 않은 요인</h3>
+    <div class="drv" id="drv2"></div>
+    <div class="nf" id="nf"></div></div>
+  </section>
+
+  <section>
+    <div class="shd"><h2>주별 전망과 근거</h2><span class="n" id="wkn"></span></div>
+    <div class="lg">
+      <span><i style="background:var(--gt)"></i>실제</span>
+      <span><i style="background:var(--fc)"></i>예측</span>
+      <span><i style="background:var(--base)"></i>기준선 (과거값만)</span>
+    </div>
+    <div id="weeks" style="display:flex;flex-direction:column;gap:16px"></div>
+  </section>
+
+  <section>
+    <div class="shd"><h2>판정은 날짜 단위로 이뤄진다</h2></div>
+    <p>같은 요인이라도 요일마다 다르게 작용합니다. 아래는 <b id="pdw"></b> 주에 대한 판정으로,
+      각 요인이 <b>7일 각각에 대해</b> 따로 판정된 결과입니다. 공휴일은 그날 하루만 하향으로 잡히고
+      나머지 날은 건드리지 않습니다 — 주 단위로 뭉뚱그리면 이 구분이 사라집니다.</p>
+    <div class="pdwrap"><table class="pd" id="pd"></table></div>
+  </section>
+
+  <section>
+    <div class="shd"><h2>요일별 정확도 (MAE)</h2></div>
+    <div class="pdwrap"><table class="wk" id="wk"></table></div>
+  </section>
+
+  <section>
+    <div class="shd"><h2>과거의 오판이 다음 판단에 쓰인다</h2></div>
+    <p>학습 구간에서는 예측이 끝난 뒤 실제와 대조해 <b>무엇을 잘못 봤는지</b>를 기록합니다. 이후 비슷한
+      상황이 오면 그 기록을 찾아와 함께 읽습니다. 아래는 그 연결이 실제로 일어난 예입니다.</p>
+    <div class="chain" id="chain"></div>
+  </section>
+
+  <section>
+    <details class="mth">
+      <summary>예측은 어떻게 만들어지나</summary>
+      <div class="mbody" id="mbody"></div>
+    </details>
+  </section>
+
+  <footer id="foot"></footer>
+</div>
+<script>
+const D = {"confirmed": [{"name": "한국 평일 공휴일", "note": "주말이 아닌 관공서 공휴일 (신정·설·어린이날 등)", "diff": -9379.487341813016, "d": -1.6358902412420315, "n": 5}, {"name": "금요일", "note": "요일 자체의 상승 편차 · 검증 6주 동안 금요일 예측 오차 33% 감소", "diff": 3143.1670464409726, "d": 0.5482044071795105, "n": 18}], "unconfirmed": [], "used_unseen": [], "always_on": [["is_friday", 6]], "n_weeks": 6, "weeks": [{"start": "2026-05-04", "end": "05-10", "days": [{"md": "05-04", "wd": "월"}, {"md": "05-05", "wd": "화"}, {"md": "05-06", "wd": "수"}, {"md": "05-07", "wd": "목"}, {"md": "05-08", "wd": "금"}, {"md": "05-09", "wd": "토"}, {"md": "05-10", "wd": "일"}], "base": [40700, 41165, 41929, 44661, 45866, 41658, 35576], "fc": [40700, 35165, 41929, 44661, 48866, 41658, 35576], "gt": [29629, 20832, 36472, 39379, 38613, 37091, 36413], "mae_base": 7829, "mae_fc": 7400, "expl": {"summary": "향후 7일 전체 수요는 평소 수준과 유사하나, 5월 5일에 약간 큰 하락이 있고 5월 8일(금요일)에 소폭 반등이 예상됩니다.", "drivers": [{"date": "2026-05-05", "direction": "감소", "factor": "어린이날(공휴일)", "magnitude": "약 6천 명 감소", "why": "과거 같은 공휴일에 외국인 입국자가 수천~만 단위로 줄어드는 경향이 있어 보수적으로 하향 조정했습니다."}, {"date": "2026-05-08", "direction": "증가", "factor": "금요일(평일 효과)", "magnitude": "약 3천 명 증가", "why": "훈련 데이터에서 금요일은 대체로 입국자 수가 소폭 증가하는 패턴을 보여 해당일만 일부 상향 반영했습니다."}], "caveat": "공휴일·요일 효과 추정치는 과거 패턴에 따른 보수적 조정이며, 환율·항공편 변동 등 관측되지 않은 변수로 실제 수요는 달라질 수 있습니다."}, "context": [42878, 43300, 48877, 47760, 48843, 46780, 37795, 40105, 38835, 30670, 30355, 45745, 42023, 35485, 38708, 36619, 38929, 42057, 43810, 41722, 33238, 35042, 36847, 44739, 49464, 58966, 53274, 41689], "heat": {"rows": [{"ko": "한국 평일 공휴일", "role": "day", "cells": [{"t": "—", "o": 0}, {"t": "큰 하향", "o": -2}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}, {"ko": "is_friday", "role": "day", "cells": [{"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "상향", "o": 1}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}], "quiet": 0}, "r_attr": "hol_kr_wd는 향후 7일 중 2일차에만 1로 관측되어, 공휴일 효과가 그 특정일에만 뚜렷하게 하향 기여할 근거가 있습니다(훈련에서 보인 수천~만 단위의 음의 잔차와 일치). is_friday는 5일차에만 1이며 훈련상 금요일은 대체로 상향 기여하므로 그 날에 한해 소폭 상향(weak_up)으로 판단하고 나머지는 중립으로 둡니다.", "r_calib": "2일차(hol_kr_wd=1)은 과거 훈련에서 공휴일에 수천~만단위의 음의 잔차가 반복되어 하향 조정 근거가 뚜렷하므로 보수적으로 약 −6,000명만 내렸습니다. 5일차(is_friday=1)는 금요일 효과로 소폭 상승하는 경향이 있어 과도 반응을 피하며 약 +3,000명만 올려 기준 예측의 궤적을 유지했습니다. 과거 사례들의 회고를 반영해 한 채널에 과도하게 몰아주지 않도록 조심했고, 다른 날과 중립으로 표기된 채널들은 전혀 움직이지 않았습니다.", "cases": [{"date": "2026-02-16", "verdict": "better", "days": [{"md": "02-16", "wd": "월"}, {"md": "02-17", "wd": "화"}, {"md": "02-18", "wd": "수"}, {"md": "02-19", "wd": "목"}, {"md": "02-20", "wd": "금"}, {"md": "02-21", "wd": "토"}, {"md": "02-22", "wd": "일"}], "context": [27213, 25810, 27905, 28998, 31529, 28981, 25352, 26272, 26309, 28853, 28288, 29916, 28687, 27243, 30145, 30384, 31857, 31417, 32328, 31167, 27726, 29112, 28222, 29307, 28869, 33869, 37932, 37401], "base": [35987, 35016, 34298, 33859, 33582, 33373, 33242], "fc": [29987, 29516, 29298, 33859, 36082, 33373, 33242], "gt": [28538, 28205, 25292, 37003, 45281, 40080, 35404], "heat": {"rows": [{"ko": "한국 평일 공휴일", "role": "day", "cells": [{"t": "큰 하향", "o": -2}, {"t": "큰 하향", "o": -2}, {"t": "큰 하향", "o": -2}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}, {"ko": "is_friday", "role": "day", "cells": [{"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "상향", "o": 1}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}], "quiet": 0}, "fixes": [], "r_attr": "hol_kr_wd는 향후 3일(연속된 1) 동안 공휴일 표기가 있어 과거 관측에서 연속 홀일이 있을 때 예측보다 수천~만명 단위로 큰 하향 잔차를 일으킨 사례가 많았습니다. 따라서 이번에는 첫 3일에 강한 하향 기여가 있을 것으로 판단됩니다. is_friday는 5일차에만 1로 관측되어 금요일 효과(대체로 수천명 수준의 상향)를 소폭 반영하는 것이 타당해 약한 상향으로 표기했습니다.", "reflect": "잔차가 처음 3일에 음수로 크게 몰려 있고(−7.4k, −6.8k, −9.0k), 그 3일에 hol_kr_wd=1으로 연속 공휴일 표기가 있었으므로 hol_kr_wd의 강한 하향 기여가 맞습니다. 5일차 잔차가 크게 양수(+11.7k)이고 그날만 is_friday=1이므로 is_friday는 약한 상향이 아니라 강한 상향 기여로 보는 것이 맞습니다. 나머지 날들의 잔차는 해당 피처들과 일치하지 않아 neutral로 내려야 합니다."}, {"date": "2026-03-02", "verdict": "better", "days": [{"md": "03-02", "wd": "월"}, {"md": "03-03", "wd": "화"}, {"md": "03-04", "wd": "수"}, {"md": "03-05", "wd": "목"}, {"md": "03-06", "wd": "금"}, {"md": "03-07", "wd": "토"}, {"md": "03-08", "wd": "일"}], "context": [30145, 30384, 31857, 31417, 32328, 31167, 27726, 29112, 28222, 29307, 28869, 33869, 37932, 37401, 28538, 28205, 25292, 37003, 45281, 40080, 35404, 39956, 39829, 42593, 44524, 45256, 39215, 36198], "base": [36316, 36109, 36088, 36127, 36039, 35927, 35783], "fc": [30316, 36109, 36088, 36127, 38239, 35927, 35783], "gt": [24692, 40034, 45407, 46549, 47282, 43073, 37174], "heat": {"rows": [{"ko": "한국 평일 공휴일", "role": "day", "cells": [{"t": "큰 하향", "o": -2}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}, {"ko": "is_friday", "role": "day", "cells": [{"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "상향", "o": 1}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}], "quiet": 0}, "fixes": [], "r_attr": "향후 첫날(horizon day1)에 공휴일(hol_kr_wd=1)이 명확히 있으므로 훈련에서 관찰된 수천~만 단위의 음의 잔차 패턴을 반영해 강한 하향 기여로 판단합니다. is_friday는 5일차에만 1로 예보되어 금요일 효과가 소폭 상향(수천명 수준)으로 기여할 근거가 있으나 극단적 수준은 아니므로 약한 상향으로 표시했습니다.", "reflect": "잔차가 7일 중 2~6일에 걸쳐 큰 양의 값(특히 3~5일차)에 몰려 있고, 1일차에는 큰 음의 잔차가 몰려 있습니다. hol_kr_wd는 오직 1일차에만 활성화되어 그 날의 큰 음의 잔차를 잘 설명하므로 strong_down이 맞고, is_friday는 5일차에만 활성화되지만 양의 잔차가 여러 날에 걸쳐 나타나므로 금요일 효과 하나만으로는 그 전체 양의 잔차를 설명할 수 없어 neutral로 내려야 합니다."}, {"date": "2025-12-29", "verdict": "worse", "days": [{"md": "12-29", "wd": "월"}, {"md": "12-30", "wd": "화"}, {"md": "12-31", "wd": "수"}, {"md": "01-01", "wd": "목"}, {"md": "01-02", "wd": "금"}, {"md": "01-03", "wd": "토"}, {"md": "01-04", "wd": "일"}], "context": [31745, 31045, 30772, 27853, 36435, 33518, 28743, 30374, 29949, 32560, 34686, 37880, 36452, 30126, 32449, 30637, 32818, 36118, 39943, 38827, 32693, 35867, 37507, 41002, 41025, 44876, 42137, 31383], "base": [33919, 35962, 38261, 39729, 41953, 39521, 32943], "fc": [33919, 35962, 38261, 31729, 45953, 39521, 32943], "gt": [31022, 30661, 30300, 34658, 35270, 30812, 26478], "heat": {"rows": [{"ko": "is_friday", "role": "day", "cells": [{"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "큰 상향", "o": 2}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}, {"ko": "한국 평일 공휴일", "role": "day", "cells": [{"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "큰 하향", "o": -2}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}], "quiet": 0}, "fixes": [{"ko": "한국 평일 공휴일", "d": 4, "was": "큰 하향", "now": "—", "o": 0}], "r_attr": "hol_kr_wd는 window 중 4일차에만 공휴일(평일에 끼인 관공서 휴무)으로 관측되어 훈련에서 관찰된 수천~만단위의 큰 음의 잔차 특성과 일치하므로 해당일에 강한 하향 기여로 판단합니다. is_friday는 5일차가 금요일로, 예측 기반 수준(예측값이 높은 구간)에서 금요일 효과가 통상 수천~만명 수준의 플러스로 나타나는 점을 고려해 해당일에 강한 상승 기여로 판정했으며 나머지 날들은 근거 부족으로 neutral입니다.", "reflect": "잔차가 7일 내내 음의 값으로 비슷한 수준(수천~만 단위)으로 깔려 있어 특정일에 집중된 이상값이 아니라 Ŷ_base의 수준 편향으로 보입니다. hol_kr_wd는 4일차에만 1로 특이하긴 하나 잔차가 그날에만 몰려 있지 않고 전체적으로 낮아서 해당 피처가 잔차를 설명한다고 보기 어렵고, is_friday도 마찬가지로 5일차에만 1이지만 잔차 분포와 일치하지 않습니다."}], "cases_lb": [{"date": "2026-02-09", "verdict": "better", "days": [{"md": "02-09", "wd": "월"}, {"md": "02-10", "wd": "화"}, {"md": "02-11", "wd": "수"}, {"md": "02-12", "wd": "목"}, {"md": "02-13", "wd": "금"}, {"md": "02-14", "wd": "토"}, {"md": "02-15", "wd": "일"}], "context": [26050, 24860, 26862, 28069, 30414, 27199, 24489, 27213, 25810, 27905, 28998, 31529, 28981, 25352, 26272, 26309, 28853, 28288, 29916, 28687, 27243, 30145, 30384, 31857, 31417, 32328, 31167, 27726], "base": [29201, 29948, 30905, 31230, 31668, 30118, 28053], "fc": [29201, 29948, 30905, 31230, 33668, 30118, 28053], "gt": [29112, 28222, 29307, 28869, 33869, 37932, 37401], "heat": {"rows": [{"ko": "is_friday", "role": "day", "cells": [{"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "상향", "o": 1}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}], "quiet": 1}, "fixes": [], "r_attr": "hol_kr_wd의 향후 7일 값이 모두 0이므로 공휴일로 인한 하향 편향을 기대할 근거가 없습니다. is_friday는 5일차에만 1로 나타나 훈련에서 보인 금요일의 소폭 상향(수천명 수준) 경향과 일치하지만 단일 금요일에 그치고 전체 수준이 극단적이지 않아 영향은 약하다고 판단됩니다.", "reflect": "잔차가 6~7일차에 크게 몰려 있어 그 큰 상향분은 Ŷ_base의 오차(피처들이 설명하지 못한 부분)로 보입니다. 다만 5일차에만 is_friday가 1이었고 잔차도 소폭 플러스(+2201)여서 그 날의 약한 상향은 is_friday로 설명될 수 있으므로 해당 라벨만 유지합니다."}, {"date": "2026-03-23", "verdict": "better", "days": [{"md": "03-23", "wd": "월"}, {"md": "03-24", "wd": "화"}, {"md": "03-25", "wd": "수"}, {"md": "03-26", "wd": "목"}, {"md": "03-27", "wd": "금"}, {"md": "03-28", "wd": "토"}, {"md": "03-29", "wd": "일"}], "context": [39956, 39829, 42593, 44524, 45256, 39215, 36198, 24692, 40034, 45407, 46549, 47282, 43073, 37174, 42319, 41744, 42201, 44573, 47974, 44798, 38753, 43405, 40918, 45127, 51103, 54330, 45006, 38588], "base": [40584, 42898, 45101, 47945, 48837, 43790, 38860], "fc": [40584, 42898, 45101, 47945, 50837, 43790, 38860], "gt": [43650, 42007, 47943, 49478, 52525, 49508, 39952], "heat": {"rows": [{"ko": "is_friday", "role": "day", "cells": [{"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "상향", "o": 1}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}], "quiet": 1}, "fixes": [], "r_attr": "향후 7일간 hol_kr_wd가 모두 0로 관측되어 공휴일에 의한 하향 효과를 기대할 근거가 없으므로 모두 neutral입니다. is_friday는 5일차에만 1로 나타나며, 훈련에서 금요일은 통상 수천명 단위의 상향 기여를 보였으나 단일 일 활성화이고 수준 불확실성이 있어 보수적으로 약한 상향(weak_up)으로 판단했습니다.", "reflect": "잔차가 특정일(5일차)에 몰려 있지 않고 1~7일에 걸쳐 대체로 양수(특히 1,3,5,6일에 큰 값)를 보이며 금요일(5일차)만의 급등 패턴이 아닙니다. hol_kr_wd는 향후 7일 모두 0으로 해당 피처가 이번 잔차를 설명할 근거가 전혀 없고, is_friday는 5일차에만 1이지만 잔차가 여러 날에 걸쳐 분포하므로 금요일 활성화만으로 잔차를 설명하기 어렵습니다."}, {"date": "2025-12-29", "verdict": "worse", "days": [{"md": "12-29", "wd": "월"}, {"md": "12-30", "wd": "화"}, {"md": "12-31", "wd": "수"}, {"md": "01-01", "wd": "목"}, {"md": "01-02", "wd": "금"}, {"md": "01-03", "wd": "토"}, {"md": "01-04", "wd": "일"}], "context": [31745, 31045, 30772, 27853, 36435, 33518, 28743, 30374, 29949, 32560, 34686, 37880, 36452, 30126, 32449, 30637, 32818, 36118, 39943, 38827, 32693, 35867, 37507, 41002, 41025, 44876, 42137, 31383], "base": [33919, 35962, 38261, 39729, 41953, 39521, 32943], "fc": [33919, 35962, 38261, 31729, 45953, 39521, 32943], "gt": [31022, 30661, 30300, 34658, 35270, 30812, 26478], "heat": {"rows": [{"ko": "is_friday", "role": "day", "cells": [{"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "큰 상향", "o": 2}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}, {"ko": "한국 평일 공휴일", "role": "day", "cells": [{"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "큰 하향", "o": -2}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}], "quiet": 0}, "fixes": [{"ko": "한국 평일 공휴일", "d": 4, "was": "큰 하향", "now": "—", "o": 0}], "r_attr": "hol_kr_wd는 window 중 4일차에만 공휴일(평일에 끼인 관공서 휴무)으로 관측되어 훈련에서 관찰된 수천~만단위의 큰 음의 잔차 특성과 일치하므로 해당일에 강한 하향 기여로 판단합니다. is_friday는 5일차가 금요일로, 예측 기반 수준(예측값이 높은 구간)에서 금요일 효과가 통상 수천~만명 수준의 플러스로 나타나는 점을 고려해 해당일에 강한 상승 기여로 판정했으며 나머지 날들은 근거 부족으로 neutral입니다.", "reflect": "잔차가 7일 내내 음의 값으로 비슷한 수준(수천~만 단위)으로 깔려 있어 특정일에 집중된 이상값이 아니라 Ŷ_base의 수준 편향으로 보입니다. hol_kr_wd는 4일차에만 1로 특이하긴 하나 잔차가 그날에만 몰려 있지 않고 전체적으로 낮아서 해당 피처가 잔차를 설명한다고 보기 어렵고, is_friday도 마찬가지로 5일차에만 1이지만 잔차 분포와 일치하지 않습니다."}]}, {"start": "2026-05-11", "end": "05-17", "days": [{"md": "05-11", "wd": "월"}, {"md": "05-12", "wd": "화"}, {"md": "05-13", "wd": "수"}, {"md": "05-14", "wd": "목"}, {"md": "05-15", "wd": "금"}, {"md": "05-16", "wd": "토"}, {"md": "05-17", "wd": "일"}], "base": [36216, 36516, 38022, 38875, 38959, 38363, 37364], "fc": [36216, 36516, 38022, 38875, 41459, 38363, 37364], "gt": [40300, 36354, 37364, 41396, 42126, 40025, 34473], "mae_base": 2163, "mae_fc": 1806, "expl": {"summary": "이번 7일 예측은 전반적으로 평상시 수준과 유사하며, 5월 15일(금요일)에만 눈에 띄는 소폭 상승이 예상됩니다.", "drivers": [{"date": "2026-05-15", "direction": "증가", "factor": "금요일(주간 효과)", "magnitude": "약 2,500명 증가", "why": "과거 관찰에서 금요일은 통상 수천명 수준의 상향 잔차를 만드는 경향이 있어 해당 하루에 소폭 보정했음"}], "caveat": "금요일 효과는 과거 패턴에 기초한 보수적 보정치이며 실제 증감은 변동성이 있어 달라질 수 있습니다."}, "context": [40105, 38835, 30670, 30355, 45745, 42023, 35485, 38708, 36619, 38929, 42057, 43810, 41722, 33238, 35042, 36847, 44739, 49464, 58966, 53274, 41689, 29629, 20832, 36472, 39379, 38613, 37091, 36413], "heat": {"rows": [{"ko": "is_friday", "role": "day", "cells": [{"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "상향", "o": 1}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}], "quiet": 1}, "r_attr": "hol_kr_wd의 향후 7일 값이 모두 0이므로 공휴일에 의한 체계적 하향 기여를 기대할 근거가 없습니다. is_friday는 5일차에만 1으로 나타났고, 과거 지식에 따르면 금요일은 보통 수천명 수준의 상향 잔차를 만들므로 해당 하루에 약한 상향(weak_up) 기여가 타당합니다.", "r_calib": "5일차에만 is_friday가 1로 관측되어 금요일의 상향 잔차 가능성을 소폭 반영해 그 날만 위로 보정했습니다. 과거 reflect에서 금요일 보정을 과대적용해 성능이 나빠진 사례가 있어 이번에는 보수적으로 수천명 수준(+2,500명)의 약한 상향만 적용했고, 다른 날과 전체 궤적은 그대로 유지했습니다.", "cases": [{"date": "2026-01-05", "verdict": "worse", "days": [{"md": "01-05", "wd": "월"}, {"md": "01-06", "wd": "화"}, {"md": "01-07", "wd": "수"}, {"md": "01-08", "wd": "목"}, {"md": "01-09", "wd": "금"}, {"md": "01-10", "wd": "토"}, {"md": "01-11", "wd": "일"}], "context": [30374, 29949, 32560, 34686, 37880, 36452, 30126, 32449, 30637, 32818, 36118, 39943, 38827, 32693, 35867, 37507, 41002, 41025, 44876, 42137, 31383, 31022, 30661, 30300, 34658, 35270, 30812, 26478], "base": [27804, 28886, 30199, 32212, 33014, 31796, 28566], "fc": [27804, 28886, 30199, 32212, 35014, 31796, 28566], "gt": [31963, 29131, 29299, 28105, 31794, 33425, 26790], "heat": {"rows": [{"ko": "is_friday", "role": "day", "cells": [{"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "상향", "o": 1}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}], "quiet": 1}, "fixes": [], "r_attr": "hol_kr_wd의 향후 7일 값이 모두 0으로 공휴일이 없어 이 피처가 잔차를 설명할 근거가 없습니다. is_friday는 5일차에만 1로 관측되며 과거에는 금요일이 Ŷ_base보다 수천명 단위로 위로 보정되는 경향이 있어 이번에는 소폭 상향(weak_up) 기여가 합리적입니다.", "reflect": "hol_kr_wd는 next-7이 전부 0이라 해당 피처가 이번 잔차(특히 1일차 큰 플러스와 4일차 큰 마이너스)를 설명할 근거가 없습니다. is_friday는 5일차에만 1이었는데 그 날의 잔차는 −1220로 음수여서, 과거 경향과 달리 실제 잔차는 금요일에 상향 기여를 시사하지 않으므로 원래 매긴 weak_up은 맞지 않습니다."}, {"date": "2026-02-09", "verdict": "better", "days": [{"md": "02-09", "wd": "월"}, {"md": "02-10", "wd": "화"}, {"md": "02-11", "wd": "수"}, {"md": "02-12", "wd": "목"}, {"md": "02-13", "wd": "금"}, {"md": "02-14", "wd": "토"}, {"md": "02-15", "wd": "일"}], "context": [26050, 24860, 26862, 28069, 30414, 27199, 24489, 27213, 25810, 27905, 28998, 31529, 28981, 25352, 26272, 26309, 28853, 28288, 29916, 28687, 27243, 30145, 30384, 31857, 31417, 32328, 31167, 27726], "base": [29201, 29948, 30905, 31230, 31668, 30118, 28053], "fc": [29201, 29948, 30905, 31230, 33668, 30118, 28053], "gt": [29112, 28222, 29307, 28869, 33869, 37932, 37401], "heat": {"rows": [{"ko": "is_friday", "role": "day", "cells": [{"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "상향", "o": 1}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}], "quiet": 1}, "fixes": [], "r_attr": "hol_kr_wd의 향후 7일 값이 모두 0이므로 공휴일로 인한 하향 편향을 기대할 근거가 없습니다. is_friday는 5일차에만 1로 나타나 훈련에서 보인 금요일의 소폭 상향(수천명 수준) 경향과 일치하지만 단일 금요일에 그치고 전체 수준이 극단적이지 않아 영향은 약하다고 판단됩니다.", "reflect": "잔차가 6~7일차에 크게 몰려 있어 그 큰 상향분은 Ŷ_base의 오차(피처들이 설명하지 못한 부분)로 보입니다. 다만 5일차에만 is_friday가 1이었고 잔차도 소폭 플러스(+2201)여서 그 날의 약한 상향은 is_friday로 설명될 수 있으므로 해당 라벨만 유지합니다."}, {"date": "2026-02-02", "verdict": "better", "days": [{"md": "02-02", "wd": "월"}, {"md": "02-03", "wd": "화"}, {"md": "02-04", "wd": "수"}, {"md": "02-05", "wd": "목"}, {"md": "02-06", "wd": "금"}, {"md": "02-07", "wd": "토"}, {"md": "02-08", "wd": "일"}], "context": [31963, 29131, 29299, 28105, 31794, 33425, 26790, 26050, 24860, 26862, 28069, 30414, 27199, 24489, 27213, 25810, 27905, 28998, 31529, 28981, 25352, 26272, 26309, 28853, 28288, 29916, 28687, 27243], "base": [27340, 27278, 28105, 28772, 29701, 28598, 26394], "fc": [27340, 27278, 28105, 28772, 32201, 28598, 26394], "gt": [30145, 30384, 31857, 31417, 32328, 31167, 27726], "heat": {"rows": [{"ko": "is_friday", "role": "day", "cells": [{"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "상향", "o": 1}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}], "quiet": 1}, "fixes": [], "r_attr": "hol_kr_wd의 향후 7일 값이 모두 0이라 공휴일로 인한 체계적 하향 효과를 적용할 근거가 없습니다. is_friday는 5일차에만 1로 관측되며 학습상 금요일은 대체로 Ŷ_base보다 수요를 수천명 수준으로 끌어올리는 경향이 있어 이번에도 소폭 상향 기여가 합리적입니다.", "reflect": "hol_kr_wd에 붙였던 라벨은 원래대로 neutral이 맞습니다. 잔차가 7일에 걸쳐 비슷한 방향으로 분포되어 있고 hol_kr_wd는 모든 날짜가 0이라 이 잔차를 설명하지 못합니다. is_friday의 5일차 값이 1이긴 하지만 잔차는 특정일에 몰려 있지 않고 오히려 초반(1~3일)에 더 크게 나타나므로, 5일차만을 근거로 한 weak_up 라벨은 타당하지 않습니다."}], "cases_lb": [{"date": "2026-03-23", "verdict": "better", "days": [{"md": "03-23", "wd": "월"}, {"md": "03-24", "wd": "화"}, {"md": "03-25", "wd": "수"}, {"md": "03-26", "wd": "목"}, {"md": "03-27", "wd": "금"}, {"md": "03-28", "wd": "토"}, {"md": "03-29", "wd": "일"}], "context": [39956, 39829, 42593, 44524, 45256, 39215, 36198, 24692, 40034, 45407, 46549, 47282, 43073, 37174, 42319, 41744, 42201, 44573, 47974, 44798, 38753, 43405, 40918, 45127, 51103, 54330, 45006, 38588], "base": [40584, 42898, 45101, 47945, 48837, 43790, 38860], "fc": [40584, 42898, 45101, 47945, 50837, 43790, 38860], "gt": [43650, 42007, 47943, 49478, 52525, 49508, 39952], "heat": {"rows": [{"ko": "is_friday", "role": "day", "cells": [{"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "상향", "o": 1}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}], "quiet": 1}, "fixes": [], "r_attr": "향후 7일간 hol_kr_wd가 모두 0로 관측되어 공휴일에 의한 하향 효과를 기대할 근거가 없으므로 모두 neutral입니다. is_friday는 5일차에만 1로 나타나며, 훈련에서 금요일은 통상 수천명 단위의 상향 기여를 보였으나 단일 일 활성화이고 수준 불확실성이 있어 보수적으로 약한 상향(weak_up)으로 판단했습니다.", "reflect": "잔차가 특정일(5일차)에 몰려 있지 않고 1~7일에 걸쳐 대체로 양수(특히 1,3,5,6일에 큰 값)를 보이며 금요일(5일차)만의 급등 패턴이 아닙니다. hol_kr_wd는 향후 7일 모두 0으로 해당 피처가 이번 잔차를 설명할 근거가 전혀 없고, is_friday는 5일차에만 1이지만 잔차가 여러 날에 걸쳐 분포하므로 금요일 활성화만으로 잔차를 설명하기 어렵습니다."}, {"date": "2026-01-05", "verdict": "worse", "days": [{"md": "01-05", "wd": "월"}, {"md": "01-06", "wd": "화"}, {"md": "01-07", "wd": "수"}, {"md": "01-08", "wd": "목"}, {"md": "01-09", "wd": "금"}, {"md": "01-10", "wd": "토"}, {"md": "01-11", "wd": "일"}], "context": [30374, 29949, 32560, 34686, 37880, 36452, 30126, 32449, 30637, 32818, 36118, 39943, 38827, 32693, 35867, 37507, 41002, 41025, 44876, 42137, 31383, 31022, 30661, 30300, 34658, 35270, 30812, 26478], "base": [27804, 28886, 30199, 32212, 33014, 31796, 28566], "fc": [27804, 28886, 30199, 32212, 35014, 31796, 28566], "gt": [31963, 29131, 29299, 28105, 31794, 33425, 26790], "heat": {"rows": [{"ko": "is_friday", "role": "day", "cells": [{"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "상향", "o": 1}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}], "quiet": 1}, "fixes": [], "r_attr": "hol_kr_wd의 향후 7일 값이 모두 0으로 공휴일이 없어 이 피처가 잔차를 설명할 근거가 없습니다. is_friday는 5일차에만 1로 관측되며 과거에는 금요일이 Ŷ_base보다 수천명 단위로 위로 보정되는 경향이 있어 이번에는 소폭 상향(weak_up) 기여가 합리적입니다.", "reflect": "hol_kr_wd는 next-7이 전부 0이라 해당 피처가 이번 잔차(특히 1일차 큰 플러스와 4일차 큰 마이너스)를 설명할 근거가 없습니다. is_friday는 5일차에만 1이었는데 그 날의 잔차는 −1220로 음수여서, 과거 경향과 달리 실제 잔차는 금요일에 상향 기여를 시사하지 않으므로 원래 매긴 weak_up은 맞지 않습니다."}, {"date": "2026-04-13", "verdict": "worse", "days": [{"md": "04-13", "wd": "월"}, {"md": "04-14", "wd": "화"}, {"md": "04-15", "wd": "수"}, {"md": "04-16", "wd": "목"}, {"md": "04-17", "wd": "금"}, {"md": "04-18", "wd": "토"}, {"md": "04-19", "wd": "일"}], "context": [43405, 40918, 45127, 51103, 54330, 45006, 38588, 43650, 42007, 47943, 49478, 52525, 49508, 39952, 43666, 44327, 51690, 55904, 57636, 53178, 41484, 42878, 43300, 48877, 47760, 48843, 46780, 37795], "base": [41089, 43333, 47314, 49331, 50000, 45457, 39402], "fc": [41089, 43333, 47314, 49331, 52500, 45457, 39402], "gt": [40105, 38835, 30670, 30355, 45745, 42023, 35485], "heat": {"rows": [{"ko": "is_friday", "role": "day", "cells": [{"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "상향", "o": 1}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}], "quiet": 1}, "fixes": [], "r_attr": "hol_kr_wd의 향후 7일 값이 모두 0이므로(공휴일 없음) 이 변수가 이번 window의 잔차를 설명할 근거가 없습니다. is_friday는 5일차에만 1로 관측되어 금요일 효과가 소폭 상향 보정할 여지가 있으나, 최근 수치가 혼재하고 기준 예측(Ŷ_base)이 과거 패턴을 일부 반영했을 가능성도 있어 크기는 보수적으로 약한 상향으로 봅니다.", "reflect": "잔차가 7일 모두 음수로 특히 3~4일차에 큰 음수를 보이며 특정일에 잔차가 몰려 있지 않습니다. hol_kr_wd의 값은 지난 28일과 다음 7일 모두 0으로 특이치가 없어 원래의 neutral 판단이 옳았고, is_friday도 5일차에만 1이 있지만 잔차가 그날에 집중되지 않았으므로 약한 상향(weak_up)은 근거가 부족합니다."}]}, {"start": "2026-05-18", "end": "05-24", "days": [{"md": "05-18", "wd": "월"}, {"md": "05-19", "wd": "화"}, {"md": "05-20", "wd": "수"}, {"md": "05-21", "wd": "목"}, {"md": "05-22", "wd": "금"}, {"md": "05-23", "wd": "토"}, {"md": "05-24", "wd": "일"}], "base": [35301, 35835, 37070, 38371, 38792, 38776, 38496], "fc": [35301, 35835, 37070, 38371, 41292, 38776, 38496], "gt": [37493, 32472, 33361, 39114, 43643, 43703, 38784], "mae_base": 2867, "mae_fc": 2510, "expl": {"summary": "향후 7일 동안 외국인 일별 입국자 수는 점진적으로 증가해 5일차(2026-05-22)에 정점을 찍은 뒤 소폭 하락합니다. 5일차가 눈에 띄게 높으며 나머지 날짜는 평상 수준에 가깝습니다.", "drivers": [{"date": "2026-05-22", "direction": "증가", "factor": "금요일(주중 효과)", "magnitude": "약 2,500명 증가", "why": "모델 학습에서 금요일은 입국자가 다소 늘어나는 경향이 있어 해당 날짜에 보수적으로 상향 보정했기 때문입니다."}], "caveat": "금요일 효과는 과거에 변동성이 있어 보수적으로 반영한 값이며 실제 영향은 이보다 크거나 작을 수 있습니다."}, "context": [38708, 36619, 38929, 42057, 43810, 41722, 33238, 35042, 36847, 44739, 49464, 58966, 53274, 41689, 29629, 20832, 36472, 39379, 38613, 37091, 36413, 40300, 36354, 37364, 41396, 42126, 40025, 34473], "heat": {"rows": [{"ko": "is_friday", "role": "day", "cells": [{"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "상향", "o": 1}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}], "quiet": 1}, "r_attr": "hol_kr_wd의 향후 7일 값이 모두 0이라 공휴일 효과로 잔차를 설명할 근거가 없습니다. is_friday는 5일차에만 1로 나타나며, 훈련 관찰에서 금요일은 대체로 입국자 수를 상향시키는 경향이 있으나 이번 창의 수준(최근 수치가 극히 고성수기 수준은 아님)을 고려하면 효과는 보통보다 크지 않을 것으로 판단되어 weak_up을 부여합니다.", "r_calib": "금요일(is_friday)이 5일차에만 활성화되어 있어 그 날만 위로 보정했습니다. 과거 사례들의 반성(reflect)에서 금요일 효과를 과대반영해 성능이 악화된 경우가 있어 이번에는 weak_up을 보수적으로 적용해 약 +2,500명만 밀고 나머지 날짜는 기준 예측을 유지했습니다.", "cases": [{"date": "2026-01-05", "verdict": "worse", "days": [{"md": "01-05", "wd": "월"}, {"md": "01-06", "wd": "화"}, {"md": "01-07", "wd": "수"}, {"md": "01-08", "wd": "목"}, {"md": "01-09", "wd": "금"}, {"md": "01-10", "wd": "토"}, {"md": "01-11", "wd": "일"}], "context": [30374, 29949, 32560, 34686, 37880, 36452, 30126, 32449, 30637, 32818, 36118, 39943, 38827, 32693, 35867, 37507, 41002, 41025, 44876, 42137, 31383, 31022, 30661, 30300, 34658, 35270, 30812, 26478], "base": [27804, 28886, 30199, 32212, 33014, 31796, 28566], "fc": [27804, 28886, 30199, 32212, 35014, 31796, 28566], "gt": [31963, 29131, 29299, 28105, 31794, 33425, 26790], "heat": {"rows": [{"ko": "is_friday", "role": "day", "cells": [{"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "상향", "o": 1}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}], "quiet": 1}, "fixes": [], "r_attr": "hol_kr_wd의 향후 7일 값이 모두 0으로 공휴일이 없어 이 피처가 잔차를 설명할 근거가 없습니다. is_friday는 5일차에만 1로 관측되며 과거에는 금요일이 Ŷ_base보다 수천명 단위로 위로 보정되는 경향이 있어 이번에는 소폭 상향(weak_up) 기여가 합리적입니다.", "reflect": "hol_kr_wd는 next-7이 전부 0이라 해당 피처가 이번 잔차(특히 1일차 큰 플러스와 4일차 큰 마이너스)를 설명할 근거가 없습니다. is_friday는 5일차에만 1이었는데 그 날의 잔차는 −1220로 음수여서, 과거 경향과 달리 실제 잔차는 금요일에 상향 기여를 시사하지 않으므로 원래 매긴 weak_up은 맞지 않습니다."}, {"date": "2026-02-02", "verdict": "better", "days": [{"md": "02-02", "wd": "월"}, {"md": "02-03", "wd": "화"}, {"md": "02-04", "wd": "수"}, {"md": "02-05", "wd": "목"}, {"md": "02-06", "wd": "금"}, {"md": "02-07", "wd": "토"}, {"md": "02-08", "wd": "일"}], "context": [31963, 29131, 29299, 28105, 31794, 33425, 26790, 26050, 24860, 26862, 28069, 30414, 27199, 24489, 27213, 25810, 27905, 28998, 31529, 28981, 25352, 26272, 26309, 28853, 28288, 29916, 28687, 27243], "base": [27340, 27278, 28105, 28772, 29701, 28598, 26394], "fc": [27340, 27278, 28105, 28772, 32201, 28598, 26394], "gt": [30145, 30384, 31857, 31417, 32328, 31167, 27726], "heat": {"rows": [{"ko": "is_friday", "role": "day", "cells": [{"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "상향", "o": 1}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}], "quiet": 1}, "fixes": [], "r_attr": "hol_kr_wd의 향후 7일 값이 모두 0이라 공휴일로 인한 체계적 하향 효과를 적용할 근거가 없습니다. is_friday는 5일차에만 1로 관측되며 학습상 금요일은 대체로 Ŷ_base보다 수요를 수천명 수준으로 끌어올리는 경향이 있어 이번에도 소폭 상향 기여가 합리적입니다.", "reflect": "hol_kr_wd에 붙였던 라벨은 원래대로 neutral이 맞습니다. 잔차가 7일에 걸쳐 비슷한 방향으로 분포되어 있고 hol_kr_wd는 모든 날짜가 0이라 이 잔차를 설명하지 못합니다. is_friday의 5일차 값이 1이긴 하지만 잔차는 특정일에 몰려 있지 않고 오히려 초반(1~3일)에 더 크게 나타나므로, 5일차만을 근거로 한 weak_up 라벨은 타당하지 않습니다."}, {"date": "2026-01-12", "verdict": "worse", "days": [{"md": "01-12", "wd": "월"}, {"md": "01-13", "wd": "화"}, {"md": "01-14", "wd": "수"}, {"md": "01-15", "wd": "목"}, {"md": "01-16", "wd": "금"}, {"md": "01-17", "wd": "토"}, {"md": "01-18", "wd": "일"}], "context": [32449, 30637, 32818, 36118, 39943, 38827, 32693, 35867, 37507, 41002, 41025, 44876, 42137, 31383, 31022, 30661, 30300, 34658, 35270, 30812, 26478, 31963, 29131, 29299, 28105, 31794, 33425, 26790], "base": [28596, 29380, 30466, 31954, 33403, 32108, 28845], "fc": [28596, 29380, 30466, 31954, 35903, 32108, 28845], "gt": [26050, 24860, 26862, 28069, 30414, 27199, 24489], "heat": {"rows": [{"ko": "is_friday", "role": "day", "cells": [{"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "상향", "o": 1}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}], "quiet": 1}, "fixes": [], "r_attr": "hol_kr_wd의 향후 7일 값은 모두 0이라 공휴일로 인한 체계적 하향 기여를 기대할 근거가 없습니다. is_friday는 7일 중 5일차에만 1로 관찰되며, 과거 지식상 금요일은 대체로 입국자 수를 수천명 수준으로 끌어올리는 경향이 있으나 이번 창에서는 극단적 이벤트나 연속적 효과가 없어 보이므로 약한 상향(weak_up)으로 판단합니다.", "reflect": "잔차가 7일 전체에 걸쳐 모두 음수(수천명 규모)로 일정하게 몰려 있어 특정일 이벤트가 아니라 Ŷ_base의 수준 편향으로 보입니다. hol_kr_wd는 향후 7일 모두 0이라 기여 근거가 없고, is_friday는 5일차에만 1이지만 잔차가 그 날에만 몰려 있지 않아 금요일 신호로 잔차를 설명할 수 없습니다."}], "cases_lb": [{"date": "2026-01-05", "verdict": "worse", "days": [{"md": "01-05", "wd": "월"}, {"md": "01-06", "wd": "화"}, {"md": "01-07", "wd": "수"}, {"md": "01-08", "wd": "목"}, {"md": "01-09", "wd": "금"}, {"md": "01-10", "wd": "토"}, {"md": "01-11", "wd": "일"}], "context": [30374, 29949, 32560, 34686, 37880, 36452, 30126, 32449, 30637, 32818, 36118, 39943, 38827, 32693, 35867, 37507, 41002, 41025, 44876, 42137, 31383, 31022, 30661, 30300, 34658, 35270, 30812, 26478], "base": [27804, 28886, 30199, 32212, 33014, 31796, 28566], "fc": [27804, 28886, 30199, 32212, 35014, 31796, 28566], "gt": [31963, 29131, 29299, 28105, 31794, 33425, 26790], "heat": {"rows": [{"ko": "is_friday", "role": "day", "cells": [{"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "상향", "o": 1}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}], "quiet": 1}, "fixes": [], "r_attr": "hol_kr_wd의 향후 7일 값이 모두 0으로 공휴일이 없어 이 피처가 잔차를 설명할 근거가 없습니다. is_friday는 5일차에만 1로 관측되며 과거에는 금요일이 Ŷ_base보다 수천명 단위로 위로 보정되는 경향이 있어 이번에는 소폭 상향(weak_up) 기여가 합리적입니다.", "reflect": "hol_kr_wd는 next-7이 전부 0이라 해당 피처가 이번 잔차(특히 1일차 큰 플러스와 4일차 큰 마이너스)를 설명할 근거가 없습니다. is_friday는 5일차에만 1이었는데 그 날의 잔차는 −1220로 음수여서, 과거 경향과 달리 실제 잔차는 금요일에 상향 기여를 시사하지 않으므로 원래 매긴 weak_up은 맞지 않습니다."}, {"date": "2026-04-20", "verdict": "worse", "days": [{"md": "04-20", "wd": "월"}, {"md": "04-21", "wd": "화"}, {"md": "04-22", "wd": "수"}, {"md": "04-23", "wd": "목"}, {"md": "04-24", "wd": "금"}, {"md": "04-25", "wd": "토"}, {"md": "04-26", "wd": "일"}], "context": [43650, 42007, 47943, 49478, 52525, 49508, 39952, 43666, 44327, 51690, 55904, 57636, 53178, 41484, 42878, 43300, 48877, 47760, 48843, 46780, 37795, 40105, 38835, 30670, 30355, 45745, 42023, 35485], "base": [36360, 37554, 39204, 41139, 43511, 42437, 37592], "fc": [36360, 37554, 39204, 41139, 46011, 42437, 37592], "gt": [38708, 36619, 38929, 42057, 43810, 41722, 33238], "heat": {"rows": [{"ko": "is_friday", "role": "day", "cells": [{"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "상향", "o": 1}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}], "quiet": 1}, "fixes": [], "r_attr": "hol_kr_wd의 향후 7일 값은 모두 0이라 공휴일에 따른 하향 기여 근거가 없어 전부 neutral입니다. is_friday는 7일 중 5일차에만 1로 관측되며, 과거 지식에서 금요일은 보통 수천명 수준으로 수요를 올리는 경향이 있어 해당 하루에 소폭 상향 기여했다고 판단해 weak_up으로 표기합니다.", "reflect": "hol_kr_wd는 향후 7일 모두 값이 0이라 잔차와 무관하므로 원래의 neutral 판단이 옳았습니다. is_friday는 5일차에만 1이었으나 그날의 잔차는 거의 0에 가깝고 잔차는 1일차(+2348)와 7일차(-4354) 등 다른 날에 크게 몰려 있어 금요일 신호가 잔차를 설명하지 못하므로 원래의 weak_up은 근거가 약합니다. 따라서 is_friday도 neutral로 내려야 합니다."}, {"date": "2026-01-12", "verdict": "worse", "days": [{"md": "01-12", "wd": "월"}, {"md": "01-13", "wd": "화"}, {"md": "01-14", "wd": "수"}, {"md": "01-15", "wd": "목"}, {"md": "01-16", "wd": "금"}, {"md": "01-17", "wd": "토"}, {"md": "01-18", "wd": "일"}], "context": [32449, 30637, 32818, 36118, 39943, 38827, 32693, 35867, 37507, 41002, 41025, 44876, 42137, 31383, 31022, 30661, 30300, 34658, 35270, 30812, 26478, 31963, 29131, 29299, 28105, 31794, 33425, 26790], "base": [28596, 29380, 30466, 31954, 33403, 32108, 28845], "fc": [28596, 29380, 30466, 31954, 35903, 32108, 28845], "gt": [26050, 24860, 26862, 28069, 30414, 27199, 24489], "heat": {"rows": [{"ko": "is_friday", "role": "day", "cells": [{"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "상향", "o": 1}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}], "quiet": 1}, "fixes": [], "r_attr": "hol_kr_wd의 향후 7일 값은 모두 0이라 공휴일로 인한 체계적 하향 기여를 기대할 근거가 없습니다. is_friday는 7일 중 5일차에만 1로 관찰되며, 과거 지식상 금요일은 대체로 입국자 수를 수천명 수준으로 끌어올리는 경향이 있으나 이번 창에서는 극단적 이벤트나 연속적 효과가 없어 보이므로 약한 상향(weak_up)으로 판단합니다.", "reflect": "잔차가 7일 전체에 걸쳐 모두 음수(수천명 규모)로 일정하게 몰려 있어 특정일 이벤트가 아니라 Ŷ_base의 수준 편향으로 보입니다. hol_kr_wd는 향후 7일 모두 0이라 기여 근거가 없고, is_friday는 5일차에만 1이지만 잔차가 그 날에만 몰려 있지 않아 금요일 신호로 잔차를 설명할 수 없습니다."}]}, {"start": "2026-05-25", "end": "05-31", "days": [{"md": "05-25", "wd": "월"}, {"md": "05-26", "wd": "화"}, {"md": "05-27", "wd": "수"}, {"md": "05-28", "wd": "목"}, {"md": "05-29", "wd": "금"}, {"md": "05-30", "wd": "토"}, {"md": "05-31", "wd": "일"}], "base": [38258, 37653, 38297, 39752, 40065, 39440, 37793], "fc": [31258, 37653, 38297, 39752, 43065, 39440, 37793], "gt": [25804, 33433, 39332, 43141, 43590, 41615, 35689], "mae_base": 4129, "mae_fc": 2700, "expl": {"summary": "이번 7일 수요는 전반적으로 평소 수준과 비슷하지만 첫째 날(2026-05-25)이 눈에 띄게 낮고, 다섯째 날(2026-05-29)은 소폭 높게 나타납니다.", "drivers": [{"date": "2026-05-25", "direction": "감소", "factor": "공휴일(관공서 대체휴무)", "magnitude": "약 7천 명 감소", "why": "과거 동일 유형의 관공서 공휴일에 입국자 수가 수천~만 단위로 일관되게 줄어든 패턴이 있어 보수적으로 약 −7,000명만 반영했습니다."}, {"date": "2026-05-29", "direction": "증가", "factor": "금요일 효과", "magnitude": "약 3천 명 증가", "why": "금요일에는 평균적으로 소폭 유입이 늘어나는 경향이 있어 과도한 보정 없이 약 +3,000명을 반영했습니다."}], "caveat": "공휴일·금요일 효과의 정확한 규모는 변동성이 있어 실제 수치는 예측과 다를 수 있으며, 예상치 못한 대형 이벤트나 정책 변화가 있으면 추가 차이가 발생할 수 있습니다."}, "context": [35042, 36847, 44739, 49464, 58966, 53274, 41689, 29629, 20832, 36472, 39379, 38613, 37091, 36413, 40300, 36354, 37364, 41396, 42126, 40025, 34473, 37493, 32472, 33361, 39114, 43643, 43703, 38784], "heat": {"rows": [{"ko": "한국 평일 공휴일", "role": "day", "cells": [{"t": "큰 하향", "o": -2}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}, {"ko": "is_friday", "role": "day", "cells": [{"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "상향", "o": 1}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}], "quiet": 0}, "r_attr": "다음-7일 중 첫날에 관공서 공휴일(hol_kr_wd=1)이 예정되어 있어 과거 관찰에서 보인 수천~만단위의 일관된 음(下향) 잔차와 부합하므로 강한 하향 기여로 판정했습니다. is_friday는 5일차에만 1로 예보되어 금요일 효과에 따라 보통 수천명 수준의 소폭 상향 기여가 기대되므로 그날만 weak_up으로 표시했습니다.", "r_calib": "1일차(hol_kr_wd=1)는 과거 관찰에서 일관된 수천~만단위 음의 잔차를 보였으므로 강한 하향 보정을 적용하되, 반영되지 않은 추가분만 보수적으로 반영해 약 −7,000명(-≈18.3%)으로 낮췄습니다. 5일차(is_friday=1)는 훈련상 보통 수천명 수준의 소폭 상향이 관찰되어 과잉 보정을 피하며 +3,000명으로 완만히 올렸고, 나머지 날과 neutral로 판단된 채널들은 그대로 유지했습니다. 또한 과거 reflect 사례에서 hol_kr_wd 과대반영·is_friday 오해가 문제된 점을 고려해 이번에도 과도한 보정은 자제했습니다.", "cases": [{"date": "2026-02-16", "verdict": "better", "days": [{"md": "02-16", "wd": "월"}, {"md": "02-17", "wd": "화"}, {"md": "02-18", "wd": "수"}, {"md": "02-19", "wd": "목"}, {"md": "02-20", "wd": "금"}, {"md": "02-21", "wd": "토"}, {"md": "02-22", "wd": "일"}], "context": [27213, 25810, 27905, 28998, 31529, 28981, 25352, 26272, 26309, 28853, 28288, 29916, 28687, 27243, 30145, 30384, 31857, 31417, 32328, 31167, 27726, 29112, 28222, 29307, 28869, 33869, 37932, 37401], "base": [35987, 35016, 34298, 33859, 33582, 33373, 33242], "fc": [29987, 29516, 29298, 33859, 36082, 33373, 33242], "gt": [28538, 28205, 25292, 37003, 45281, 40080, 35404], "heat": {"rows": [{"ko": "한국 평일 공휴일", "role": "day", "cells": [{"t": "큰 하향", "o": -2}, {"t": "큰 하향", "o": -2}, {"t": "큰 하향", "o": -2}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}, {"ko": "is_friday", "role": "day", "cells": [{"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "상향", "o": 1}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}], "quiet": 0}, "fixes": [], "r_attr": "hol_kr_wd는 향후 3일(연속된 1) 동안 공휴일 표기가 있어 과거 관측에서 연속 홀일이 있을 때 예측보다 수천~만명 단위로 큰 하향 잔차를 일으킨 사례가 많았습니다. 따라서 이번에는 첫 3일에 강한 하향 기여가 있을 것으로 판단됩니다. is_friday는 5일차에만 1로 관측되어 금요일 효과(대체로 수천명 수준의 상향)를 소폭 반영하는 것이 타당해 약한 상향으로 표기했습니다.", "reflect": "잔차가 처음 3일에 음수로 크게 몰려 있고(−7.4k, −6.8k, −9.0k), 그 3일에 hol_kr_wd=1으로 연속 공휴일 표기가 있었으므로 hol_kr_wd의 강한 하향 기여가 맞습니다. 5일차 잔차가 크게 양수(+11.7k)이고 그날만 is_friday=1이므로 is_friday는 약한 상향이 아니라 강한 상향 기여로 보는 것이 맞습니다. 나머지 날들의 잔차는 해당 피처들과 일치하지 않아 neutral로 내려야 합니다."}, {"date": "2026-03-02", "verdict": "better", "days": [{"md": "03-02", "wd": "월"}, {"md": "03-03", "wd": "화"}, {"md": "03-04", "wd": "수"}, {"md": "03-05", "wd": "목"}, {"md": "03-06", "wd": "금"}, {"md": "03-07", "wd": "토"}, {"md": "03-08", "wd": "일"}], "context": [30145, 30384, 31857, 31417, 32328, 31167, 27726, 29112, 28222, 29307, 28869, 33869, 37932, 37401, 28538, 28205, 25292, 37003, 45281, 40080, 35404, 39956, 39829, 42593, 44524, 45256, 39215, 36198], "base": [36316, 36109, 36088, 36127, 36039, 35927, 35783], "fc": [30316, 36109, 36088, 36127, 38239, 35927, 35783], "gt": [24692, 40034, 45407, 46549, 47282, 43073, 37174], "heat": {"rows": [{"ko": "한국 평일 공휴일", "role": "day", "cells": [{"t": "큰 하향", "o": -2}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}, {"ko": "is_friday", "role": "day", "cells": [{"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "상향", "o": 1}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}], "quiet": 0}, "fixes": [], "r_attr": "향후 첫날(horizon day1)에 공휴일(hol_kr_wd=1)이 명확히 있으므로 훈련에서 관찰된 수천~만 단위의 음의 잔차 패턴을 반영해 강한 하향 기여로 판단합니다. is_friday는 5일차에만 1로 예보되어 금요일 효과가 소폭 상향(수천명 수준)으로 기여할 근거가 있으나 극단적 수준은 아니므로 약한 상향으로 표시했습니다.", "reflect": "잔차가 7일 중 2~6일에 걸쳐 큰 양의 값(특히 3~5일차)에 몰려 있고, 1일차에는 큰 음의 잔차가 몰려 있습니다. hol_kr_wd는 오직 1일차에만 활성화되어 그 날의 큰 음의 잔차를 잘 설명하므로 strong_down이 맞고, is_friday는 5일차에만 활성화되지만 양의 잔차가 여러 날에 걸쳐 나타나므로 금요일 효과 하나만으로는 그 전체 양의 잔차를 설명할 수 없어 neutral로 내려야 합니다."}, {"date": "2025-12-29", "verdict": "worse", "days": [{"md": "12-29", "wd": "월"}, {"md": "12-30", "wd": "화"}, {"md": "12-31", "wd": "수"}, {"md": "01-01", "wd": "목"}, {"md": "01-02", "wd": "금"}, {"md": "01-03", "wd": "토"}, {"md": "01-04", "wd": "일"}], "context": [31745, 31045, 30772, 27853, 36435, 33518, 28743, 30374, 29949, 32560, 34686, 37880, 36452, 30126, 32449, 30637, 32818, 36118, 39943, 38827, 32693, 35867, 37507, 41002, 41025, 44876, 42137, 31383], "base": [33919, 35962, 38261, 39729, 41953, 39521, 32943], "fc": [33919, 35962, 38261, 31729, 45953, 39521, 32943], "gt": [31022, 30661, 30300, 34658, 35270, 30812, 26478], "heat": {"rows": [{"ko": "is_friday", "role": "day", "cells": [{"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "큰 상향", "o": 2}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}, {"ko": "한국 평일 공휴일", "role": "day", "cells": [{"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "큰 하향", "o": -2}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}], "quiet": 0}, "fixes": [{"ko": "한국 평일 공휴일", "d": 4, "was": "큰 하향", "now": "—", "o": 0}], "r_attr": "hol_kr_wd는 window 중 4일차에만 공휴일(평일에 끼인 관공서 휴무)으로 관측되어 훈련에서 관찰된 수천~만단위의 큰 음의 잔차 특성과 일치하므로 해당일에 강한 하향 기여로 판단합니다. is_friday는 5일차가 금요일로, 예측 기반 수준(예측값이 높은 구간)에서 금요일 효과가 통상 수천~만명 수준의 플러스로 나타나는 점을 고려해 해당일에 강한 상승 기여로 판정했으며 나머지 날들은 근거 부족으로 neutral입니다.", "reflect": "잔차가 7일 내내 음의 값으로 비슷한 수준(수천~만 단위)으로 깔려 있어 특정일에 집중된 이상값이 아니라 Ŷ_base의 수준 편향으로 보입니다. hol_kr_wd는 4일차에만 1로 특이하긴 하나 잔차가 그날에만 몰려 있지 않고 전체적으로 낮아서 해당 피처가 잔차를 설명한다고 보기 어렵고, is_friday도 마찬가지로 5일차에만 1이지만 잔차 분포와 일치하지 않습니다."}], "cases_lb": [{"date": "2026-01-12", "verdict": "worse", "days": [{"md": "01-12", "wd": "월"}, {"md": "01-13", "wd": "화"}, {"md": "01-14", "wd": "수"}, {"md": "01-15", "wd": "목"}, {"md": "01-16", "wd": "금"}, {"md": "01-17", "wd": "토"}, {"md": "01-18", "wd": "일"}], "context": [32449, 30637, 32818, 36118, 39943, 38827, 32693, 35867, 37507, 41002, 41025, 44876, 42137, 31383, 31022, 30661, 30300, 34658, 35270, 30812, 26478, 31963, 29131, 29299, 28105, 31794, 33425, 26790], "base": [28596, 29380, 30466, 31954, 33403, 32108, 28845], "fc": [28596, 29380, 30466, 31954, 35903, 32108, 28845], "gt": [26050, 24860, 26862, 28069, 30414, 27199, 24489], "heat": {"rows": [{"ko": "is_friday", "role": "day", "cells": [{"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "상향", "o": 1}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}], "quiet": 1}, "fixes": [], "r_attr": "hol_kr_wd의 향후 7일 값은 모두 0이라 공휴일로 인한 체계적 하향 기여를 기대할 근거가 없습니다. is_friday는 7일 중 5일차에만 1로 관찰되며, 과거 지식상 금요일은 대체로 입국자 수를 수천명 수준으로 끌어올리는 경향이 있으나 이번 창에서는 극단적 이벤트나 연속적 효과가 없어 보이므로 약한 상향(weak_up)으로 판단합니다.", "reflect": "잔차가 7일 전체에 걸쳐 모두 음수(수천명 규모)로 일정하게 몰려 있어 특정일 이벤트가 아니라 Ŷ_base의 수준 편향으로 보입니다. hol_kr_wd는 향후 7일 모두 0이라 기여 근거가 없고, is_friday는 5일차에만 1이지만 잔차가 그 날에만 몰려 있지 않아 금요일 신호로 잔차를 설명할 수 없습니다."}, {"date": "2026-02-02", "verdict": "better", "days": [{"md": "02-02", "wd": "월"}, {"md": "02-03", "wd": "화"}, {"md": "02-04", "wd": "수"}, {"md": "02-05", "wd": "목"}, {"md": "02-06", "wd": "금"}, {"md": "02-07", "wd": "토"}, {"md": "02-08", "wd": "일"}], "context": [31963, 29131, 29299, 28105, 31794, 33425, 26790, 26050, 24860, 26862, 28069, 30414, 27199, 24489, 27213, 25810, 27905, 28998, 31529, 28981, 25352, 26272, 26309, 28853, 28288, 29916, 28687, 27243], "base": [27340, 27278, 28105, 28772, 29701, 28598, 26394], "fc": [27340, 27278, 28105, 28772, 32201, 28598, 26394], "gt": [30145, 30384, 31857, 31417, 32328, 31167, 27726], "heat": {"rows": [{"ko": "is_friday", "role": "day", "cells": [{"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "상향", "o": 1}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}], "quiet": 1}, "fixes": [], "r_attr": "hol_kr_wd의 향후 7일 값이 모두 0이라 공휴일로 인한 체계적 하향 효과를 적용할 근거가 없습니다. is_friday는 5일차에만 1로 관측되며 학습상 금요일은 대체로 Ŷ_base보다 수요를 수천명 수준으로 끌어올리는 경향이 있어 이번에도 소폭 상향 기여가 합리적입니다.", "reflect": "hol_kr_wd에 붙였던 라벨은 원래대로 neutral이 맞습니다. 잔차가 7일에 걸쳐 비슷한 방향으로 분포되어 있고 hol_kr_wd는 모든 날짜가 0이라 이 잔차를 설명하지 못합니다. is_friday의 5일차 값이 1이긴 하지만 잔차는 특정일에 몰려 있지 않고 오히려 초반(1~3일)에 더 크게 나타나므로, 5일차만을 근거로 한 weak_up 라벨은 타당하지 않습니다."}, {"date": "2026-01-19", "verdict": "better", "days": [{"md": "01-19", "wd": "월"}, {"md": "01-20", "wd": "화"}, {"md": "01-21", "wd": "수"}, {"md": "01-22", "wd": "목"}, {"md": "01-23", "wd": "금"}, {"md": "01-24", "wd": "토"}, {"md": "01-25", "wd": "일"}], "context": [35867, 37507, 41002, 41025, 44876, 42137, 31383, 31022, 30661, 30300, 34658, 35270, 30812, 26478, 31963, 29131, 29299, 28105, 31794, 33425, 26790, 26050, 24860, 26862, 28069, 30414, 27199, 24489], "base": [25278, 25633, 26354, 26999, 27318, 26716, 24654], "fc": [25278, 25633, 26354, 26999, 29818, 26716, 24654], "gt": [27213, 25810, 27905, 28998, 31529, 28981, 25352], "heat": {"rows": [{"ko": "is_friday", "role": "day", "cells": [{"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "상향", "o": 1}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}], "quiet": 1}, "fixes": [], "r_attr": "hol_kr_wd의 next-7 값은 모두 0이라 공휴일로 인한 체계적 하향 기여 근거가 없어 neutral입니다. is_friday는 5일차에만 1로 관측되어 과거 학습에서 금요일이 통상 수천명 수준의 상향 잔차를 만들었던 점을 반영해 불확실성 고려 후 약한 상향(weak_up)으로 판단합니다.", "reflect": "잔차가 7일 내내 모두 양수로 깔려 있어 전반적인 상향 편향(Ŷ_base의 수준 오차)이 주된 원인입니다. 다만 5일차에 잔차가 특히 크게 몰려 있고 그날 is_friday 값이 1이므로 그 한 시점의 추가 상향 기여는 is_friday로 설명되는 것이 타당합니다. hol_kr_wd는 next-7에 모두 0이라 잔차와 연관성이 없어 neutral입니다."}]}, {"start": "2026-06-01", "end": "06-07", "days": [{"md": "06-01", "wd": "월"}, {"md": "06-02", "wd": "화"}, {"md": "06-03", "wd": "수"}, {"md": "06-04", "wd": "목"}, {"md": "06-05", "wd": "금"}, {"md": "06-06", "wd": "토"}, {"md": "06-07", "wd": "일"}], "base": [32990, 33281, 38340, 40850, 40912, 40025, 37411], "fc": [32990, 33281, 32340, 40850, 43912, 40025, 37411], "gt": [36588, 34330, 30429, 41601, 47363, 38962, 33038], "mae_base": 3600, "mae_fc": 2314, "expl": {"summary": "다음 7일 총입국자 수는 평소 수준과 비슷하거나 일부 날짜에서 변동이 있습니다. 2026-06-03(수요일)은 평일 사이 끼인 공휴일로 눈에 띄게 낮고, 2026-06-05(금요일)는 평년보다 다소 높은 편입니다.", "drivers": [{"date": "2026-06-03", "direction": "감소", "factor": "관공서 공휴일(평일에 끼인 휴일)", "magnitude": "약 6,000명 감소", "why": "과거 동일 유형의 공휴일에 입국자가 수천~만 단위로 줄었던 패턴이 뚜렷해 보수적으로 큰 폭으로 낮춰 반영했습니다."}, {"date": "2026-06-05", "direction": "증가", "factor": "금요일 효과", "magnitude": "약 3,000명 증가", "why": "금요일에는 통상적으로 입국자가 몇천명 증가하는 경향이 있어 소폭 상향 조정했습니다."}], "caveat": "공휴일·금요일 신호는 과거 효과를 근거로 보수적으로 조정했으나 실제 수요는 단기 이벤트나 여행 제약 변화에 따라 달라질 수 있습니다."}, "context": [29629, 20832, 36472, 39379, 38613, 37091, 36413, 40300, 36354, 37364, 41396, 42126, 40025, 34473, 37493, 32472, 33361, 39114, 43643, 43703, 38784, 25804, 33433, 39332, 43141, 43590, 41615, 35689], "heat": {"rows": [{"ko": "한국 평일 공휴일", "role": "day", "cells": [{"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "큰 하향", "o": -2}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}, {"ko": "is_friday", "role": "day", "cells": [{"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "상향", "o": 1}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}], "quiet": 0}, "r_attr": "향후 7일 중 hol_kr_wd가 1으로 관찰된 3일차는 평일에 끼어 있는 관공서 공휴일로, 과거 학습에서 입국자 수를 수천~만단위로 크게 낮춘 패턴이 뚜렷하므로 strong_down으로 판정했습니다. is_friday는 5일차에만 1로 금요일 효과가 있어 통상 수천명 수준의 상향을 유발하므로 그날만 weak_up으로 판단했고 나머지 날들은 특이점이 없어 neutral로 처리했습니다.", "r_calib": "3일차(hol_kr_wd=1)는 과거 관찰에서 공휴일에 수천~만단위의 하향 잔차가 반복되어 보수적으로 −6,000명만 낮춰(기준 대비 약 −15.7%) 하향 조정했습니다. 5일차(is_friday=1)는 금요일 효과가 통상 상향이나 과대반영을 피하기 위해 보수적으로 +3,000명만 올렸습니다; 나머지 날과 과거 reflect에서 지적된 과대보정 사례를 반영해 불확실성이 있는 신호는 과감히 접었습니다.", "cases": [{"date": "2026-02-16", "verdict": "better", "days": [{"md": "02-16", "wd": "월"}, {"md": "02-17", "wd": "화"}, {"md": "02-18", "wd": "수"}, {"md": "02-19", "wd": "목"}, {"md": "02-20", "wd": "금"}, {"md": "02-21", "wd": "토"}, {"md": "02-22", "wd": "일"}], "context": [27213, 25810, 27905, 28998, 31529, 28981, 25352, 26272, 26309, 28853, 28288, 29916, 28687, 27243, 30145, 30384, 31857, 31417, 32328, 31167, 27726, 29112, 28222, 29307, 28869, 33869, 37932, 37401], "base": [35987, 35016, 34298, 33859, 33582, 33373, 33242], "fc": [29987, 29516, 29298, 33859, 36082, 33373, 33242], "gt": [28538, 28205, 25292, 37003, 45281, 40080, 35404], "heat": {"rows": [{"ko": "한국 평일 공휴일", "role": "day", "cells": [{"t": "큰 하향", "o": -2}, {"t": "큰 하향", "o": -2}, {"t": "큰 하향", "o": -2}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}, {"ko": "is_friday", "role": "day", "cells": [{"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "상향", "o": 1}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}], "quiet": 0}, "fixes": [], "r_attr": "hol_kr_wd는 향후 3일(연속된 1) 동안 공휴일 표기가 있어 과거 관측에서 연속 홀일이 있을 때 예측보다 수천~만명 단위로 큰 하향 잔차를 일으킨 사례가 많았습니다. 따라서 이번에는 첫 3일에 강한 하향 기여가 있을 것으로 판단됩니다. is_friday는 5일차에만 1로 관측되어 금요일 효과(대체로 수천명 수준의 상향)를 소폭 반영하는 것이 타당해 약한 상향으로 표기했습니다.", "reflect": "잔차가 처음 3일에 음수로 크게 몰려 있고(−7.4k, −6.8k, −9.0k), 그 3일에 hol_kr_wd=1으로 연속 공휴일 표기가 있었으므로 hol_kr_wd의 강한 하향 기여가 맞습니다. 5일차 잔차가 크게 양수(+11.7k)이고 그날만 is_friday=1이므로 is_friday는 약한 상향이 아니라 강한 상향 기여로 보는 것이 맞습니다. 나머지 날들의 잔차는 해당 피처들과 일치하지 않아 neutral로 내려야 합니다."}, {"date": "2026-03-02", "verdict": "better", "days": [{"md": "03-02", "wd": "월"}, {"md": "03-03", "wd": "화"}, {"md": "03-04", "wd": "수"}, {"md": "03-05", "wd": "목"}, {"md": "03-06", "wd": "금"}, {"md": "03-07", "wd": "토"}, {"md": "03-08", "wd": "일"}], "context": [30145, 30384, 31857, 31417, 32328, 31167, 27726, 29112, 28222, 29307, 28869, 33869, 37932, 37401, 28538, 28205, 25292, 37003, 45281, 40080, 35404, 39956, 39829, 42593, 44524, 45256, 39215, 36198], "base": [36316, 36109, 36088, 36127, 36039, 35927, 35783], "fc": [30316, 36109, 36088, 36127, 38239, 35927, 35783], "gt": [24692, 40034, 45407, 46549, 47282, 43073, 37174], "heat": {"rows": [{"ko": "한국 평일 공휴일", "role": "day", "cells": [{"t": "큰 하향", "o": -2}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}, {"ko": "is_friday", "role": "day", "cells": [{"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "상향", "o": 1}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}], "quiet": 0}, "fixes": [], "r_attr": "향후 첫날(horizon day1)에 공휴일(hol_kr_wd=1)이 명확히 있으므로 훈련에서 관찰된 수천~만 단위의 음의 잔차 패턴을 반영해 강한 하향 기여로 판단합니다. is_friday는 5일차에만 1로 예보되어 금요일 효과가 소폭 상향(수천명 수준)으로 기여할 근거가 있으나 극단적 수준은 아니므로 약한 상향으로 표시했습니다.", "reflect": "잔차가 7일 중 2~6일에 걸쳐 큰 양의 값(특히 3~5일차)에 몰려 있고, 1일차에는 큰 음의 잔차가 몰려 있습니다. hol_kr_wd는 오직 1일차에만 활성화되어 그 날의 큰 음의 잔차를 잘 설명하므로 strong_down이 맞고, is_friday는 5일차에만 활성화되지만 양의 잔차가 여러 날에 걸쳐 나타나므로 금요일 효과 하나만으로는 그 전체 양의 잔차를 설명할 수 없어 neutral로 내려야 합니다."}, {"date": "2025-12-29", "verdict": "worse", "days": [{"md": "12-29", "wd": "월"}, {"md": "12-30", "wd": "화"}, {"md": "12-31", "wd": "수"}, {"md": "01-01", "wd": "목"}, {"md": "01-02", "wd": "금"}, {"md": "01-03", "wd": "토"}, {"md": "01-04", "wd": "일"}], "context": [31745, 31045, 30772, 27853, 36435, 33518, 28743, 30374, 29949, 32560, 34686, 37880, 36452, 30126, 32449, 30637, 32818, 36118, 39943, 38827, 32693, 35867, 37507, 41002, 41025, 44876, 42137, 31383], "base": [33919, 35962, 38261, 39729, 41953, 39521, 32943], "fc": [33919, 35962, 38261, 31729, 45953, 39521, 32943], "gt": [31022, 30661, 30300, 34658, 35270, 30812, 26478], "heat": {"rows": [{"ko": "is_friday", "role": "day", "cells": [{"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "큰 상향", "o": 2}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}, {"ko": "한국 평일 공휴일", "role": "day", "cells": [{"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "큰 하향", "o": -2}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}], "quiet": 0}, "fixes": [{"ko": "한국 평일 공휴일", "d": 4, "was": "큰 하향", "now": "—", "o": 0}], "r_attr": "hol_kr_wd는 window 중 4일차에만 공휴일(평일에 끼인 관공서 휴무)으로 관측되어 훈련에서 관찰된 수천~만단위의 큰 음의 잔차 특성과 일치하므로 해당일에 강한 하향 기여로 판단합니다. is_friday는 5일차가 금요일로, 예측 기반 수준(예측값이 높은 구간)에서 금요일 효과가 통상 수천~만명 수준의 플러스로 나타나는 점을 고려해 해당일에 강한 상승 기여로 판정했으며 나머지 날들은 근거 부족으로 neutral입니다.", "reflect": "잔차가 7일 내내 음의 값으로 비슷한 수준(수천~만 단위)으로 깔려 있어 특정일에 집중된 이상값이 아니라 Ŷ_base의 수준 편향으로 보입니다. hol_kr_wd는 4일차에만 1로 특이하긴 하나 잔차가 그날에만 몰려 있지 않고 전체적으로 낮아서 해당 피처가 잔차를 설명한다고 보기 어렵고, is_friday도 마찬가지로 5일차에만 1이지만 잔차 분포와 일치하지 않습니다."}], "cases_lb": [{"date": "2026-03-16", "verdict": "better", "days": [{"md": "03-16", "wd": "월"}, {"md": "03-17", "wd": "화"}, {"md": "03-18", "wd": "수"}, {"md": "03-19", "wd": "목"}, {"md": "03-20", "wd": "금"}, {"md": "03-21", "wd": "토"}, {"md": "03-22", "wd": "일"}], "context": [28538, 28205, 25292, 37003, 45281, 40080, 35404, 39956, 39829, 42593, 44524, 45256, 39215, 36198, 24692, 40034, 45407, 46549, 47282, 43073, 37174, 42319, 41744, 42201, 44573, 47974, 44798, 38753], "base": [37828, 43121, 44222, 45048, 45254, 43490, 38676], "fc": [37828, 43121, 44222, 45048, 47254, 43490, 38676], "gt": [43405, 40918, 45127, 51103, 54330, 45006, 38588], "heat": {"rows": [{"ko": "is_friday", "role": "day", "cells": [{"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "상향", "o": 1}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}], "quiet": 1}, "fixes": [], "r_attr": "hol_kr_wd의 향후 7일 값이 모두 0으로 공휴일(홀일) 효과가 관측되지 않아 이번 window에서 유의한 하향 기여 근거가 없습니다. is_friday는 5일차에만 1로 나타나고 최근 수준이 높은 구간이므로 금요일의 플러스 효과(수천명 단위)가 일부 설명 가능해 약한 상향 기여로 판단합니다.", "reflect": "잔차가 주로 4~5일차에 큰 양(특히 5일차 9076, 4일차 6055)으로 몰려 있고 hol_kr_wd의 향후 값은 전부 0이라 그 피처로는 설명되지 않습니다. is_friday는 5일차에만 1으로 활성화되어 있어 5일차의 큰 잔차를 설명하므로 그날의 상향 라벨만 강화하는 것이 타당합니다."}, {"date": "2026-03-30", "verdict": "better", "days": [{"md": "03-30", "wd": "월"}, {"md": "03-31", "wd": "화"}, {"md": "04-01", "wd": "수"}, {"md": "04-02", "wd": "목"}, {"md": "04-03", "wd": "금"}, {"md": "04-04", "wd": "토"}, {"md": "04-05", "wd": "일"}], "context": [24692, 40034, 45407, 46549, 47282, 43073, 37174, 42319, 41744, 42201, 44573, 47974, 44798, 38753, 43405, 40918, 45127, 51103, 54330, 45006, 38588, 43650, 42007, 47943, 49478, 52525, 49508, 39952], "base": [41972, 44072, 47681, 51045, 51793, 45902, 39491], "fc": [41972, 44072, 47681, 51045, 53793, 45902, 39491], "gt": [43666, 44327, 51690, 55904, 57636, 53178, 41484], "heat": {"rows": [{"ko": "is_friday", "role": "day", "cells": [{"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "상향", "o": 1}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}], "quiet": 1}, "fixes": [], "r_attr": "hol_kr_wd은 향후 7일 모두 0으로 관측되어 이번 window의 잔차를 설명할 일관된 근거가 없어 모든 날짜에 neutral입니다. is_friday는 5일차에만 1이며, 훈련 지식상 금요일은 보통 예측보다 플러스로 기여하므로 이번에도 소폭 상향 기여가 있을 것으로 보이지만 수준이 극단적이지 않아 weak_up으로 판단합니다.", "reflect": "잔차가 7일 내내 모두 양수이고 특히 중간(3~6일차)에 크게 몰려 있어 전반적인 수준 편향이 주요 원인입니다. hol_kr_wd는 향후 7일 모두 0으로 특이값이 없어 neutral로 둔 것이 맞고, is_friday는 5일차에만 1이라 그날의 일부 잔차를 설명할 수 있어 그날만 weak_up으로 두는 판단도 타당합니다."}, {"date": "2026-02-09", "verdict": "better", "days": [{"md": "02-09", "wd": "월"}, {"md": "02-10", "wd": "화"}, {"md": "02-11", "wd": "수"}, {"md": "02-12", "wd": "목"}, {"md": "02-13", "wd": "금"}, {"md": "02-14", "wd": "토"}, {"md": "02-15", "wd": "일"}], "context": [26050, 24860, 26862, 28069, 30414, 27199, 24489, 27213, 25810, 27905, 28998, 31529, 28981, 25352, 26272, 26309, 28853, 28288, 29916, 28687, 27243, 30145, 30384, 31857, 31417, 32328, 31167, 27726], "base": [29201, 29948, 30905, 31230, 31668, 30118, 28053], "fc": [29201, 29948, 30905, 31230, 33668, 30118, 28053], "gt": [29112, 28222, 29307, 28869, 33869, 37932, 37401], "heat": {"rows": [{"ko": "is_friday", "role": "day", "cells": [{"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "상향", "o": 1}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}], "quiet": 1}, "fixes": [], "r_attr": "hol_kr_wd의 향후 7일 값이 모두 0이므로 공휴일로 인한 하향 편향을 기대할 근거가 없습니다. is_friday는 5일차에만 1로 나타나 훈련에서 보인 금요일의 소폭 상향(수천명 수준) 경향과 일치하지만 단일 금요일에 그치고 전체 수준이 극단적이지 않아 영향은 약하다고 판단됩니다.", "reflect": "잔차가 6~7일차에 크게 몰려 있어 그 큰 상향분은 Ŷ_base의 오차(피처들이 설명하지 못한 부분)로 보입니다. 다만 5일차에만 is_friday가 1이었고 잔차도 소폭 플러스(+2201)여서 그 날의 약한 상향은 is_friday로 설명될 수 있으므로 해당 라벨만 유지합니다."}]}, {"start": "2026-06-08", "end": "06-14", "days": [{"md": "06-08", "wd": "월"}, {"md": "06-09", "wd": "화"}, {"md": "06-10", "wd": "수"}, {"md": "06-11", "wd": "목"}, {"md": "06-12", "wd": "금"}, {"md": "06-13", "wd": "토"}, {"md": "06-14", "wd": "일"}], "base": [30995, 32879, 36976, 41721, 43010, 39957, 34286], "fc": [30995, 32879, 36976, 41721, 45010, 39957, 34286], "gt": [41465, 39722, 41521, 48658, 47779, 43205, 38028], "mae_base": 5793, "mae_fc": 5508, "expl": {"summary": "이번 주(6/8~6/14)는 주초부터 점진적으로 수요가 늘어 금요일(6/12)에 정점을 찍고 그 이후로 감소하는 패턴입니다. 전반적으로 평소 수준과 비슷하나 6월 12일에 눈에 띄는 상승이 예상됩니다.", "drivers": [{"date": "2026-06-12", "direction": "증가", "factor": "금요일(주중→주말 이동)", "magnitude": "약 2천 명 증가", "why": "과거 유사 사례에서 금요일은 입국자가 수천 명 가량 늘어나는 경향이 있어, 모델 기준 예측을 보수적으로 약 +2천명 상향 조정했습니다."}], "caveat": "공휴일 지표는 모두 0이라 이번 기간 잔차 설명 근거가 없고, 금요일 효과 또한 과거 평균에 따른 추정치이므로 실제 변동은 이보다 클 수도 있고 작을 수도 있습니다."}, "context": [40300, 36354, 37364, 41396, 42126, 40025, 34473, 37493, 32472, 33361, 39114, 43643, 43703, 38784, 25804, 33433, 39332, 43141, 43590, 41615, 35689, 36588, 34330, 30429, 41601, 47363, 38962, 33038], "heat": {"rows": [{"ko": "is_friday", "role": "day", "cells": [{"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "상향", "o": 1}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}], "quiet": 1}, "r_attr": "hol_kr_wd의 향후 7일값은 모두 0이라 이 변수로 이번 window의 잔차를 설명할 근거가 없습니다. is_friday는 5일차에만 1로 관측되며, 과거 지식상 금요일은 보통 수천명 수준으로 수요를 올리는 경향이 있어 이번에는 소폭의 상향 기여가 합리적입니다.", "r_calib": "is_friday가 5일차에만 활성화되어 있어 그 날만 보수적으로 상향 조정했습니다. 유사 사례들의 reflect에서 금요일 효과를 2천명 내외로 강화했을 때 예측이 더 좋아졌으므로 이번에도 과대반응을 피해 기준예측의 일부만(약 +2000명) 밀었습니다.", "cases": [{"date": "2026-02-09", "verdict": "better", "days": [{"md": "02-09", "wd": "월"}, {"md": "02-10", "wd": "화"}, {"md": "02-11", "wd": "수"}, {"md": "02-12", "wd": "목"}, {"md": "02-13", "wd": "금"}, {"md": "02-14", "wd": "토"}, {"md": "02-15", "wd": "일"}], "context": [26050, 24860, 26862, 28069, 30414, 27199, 24489, 27213, 25810, 27905, 28998, 31529, 28981, 25352, 26272, 26309, 28853, 28288, 29916, 28687, 27243, 30145, 30384, 31857, 31417, 32328, 31167, 27726], "base": [29201, 29948, 30905, 31230, 31668, 30118, 28053], "fc": [29201, 29948, 30905, 31230, 33668, 30118, 28053], "gt": [29112, 28222, 29307, 28869, 33869, 37932, 37401], "heat": {"rows": [{"ko": "is_friday", "role": "day", "cells": [{"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "상향", "o": 1}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}], "quiet": 1}, "fixes": [], "r_attr": "hol_kr_wd의 향후 7일 값이 모두 0이므로 공휴일로 인한 하향 편향을 기대할 근거가 없습니다. is_friday는 5일차에만 1로 나타나 훈련에서 보인 금요일의 소폭 상향(수천명 수준) 경향과 일치하지만 단일 금요일에 그치고 전체 수준이 극단적이지 않아 영향은 약하다고 판단됩니다.", "reflect": "잔차가 6~7일차에 크게 몰려 있어 그 큰 상향분은 Ŷ_base의 오차(피처들이 설명하지 못한 부분)로 보입니다. 다만 5일차에만 is_friday가 1이었고 잔차도 소폭 플러스(+2201)여서 그 날의 약한 상향은 is_friday로 설명될 수 있으므로 해당 라벨만 유지합니다."}, {"date": "2026-02-02", "verdict": "better", "days": [{"md": "02-02", "wd": "월"}, {"md": "02-03", "wd": "화"}, {"md": "02-04", "wd": "수"}, {"md": "02-05", "wd": "목"}, {"md": "02-06", "wd": "금"}, {"md": "02-07", "wd": "토"}, {"md": "02-08", "wd": "일"}], "context": [31963, 29131, 29299, 28105, 31794, 33425, 26790, 26050, 24860, 26862, 28069, 30414, 27199, 24489, 27213, 25810, 27905, 28998, 31529, 28981, 25352, 26272, 26309, 28853, 28288, 29916, 28687, 27243], "base": [27340, 27278, 28105, 28772, 29701, 28598, 26394], "fc": [27340, 27278, 28105, 28772, 32201, 28598, 26394], "gt": [30145, 30384, 31857, 31417, 32328, 31167, 27726], "heat": {"rows": [{"ko": "is_friday", "role": "day", "cells": [{"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "상향", "o": 1}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}], "quiet": 1}, "fixes": [], "r_attr": "hol_kr_wd의 향후 7일 값이 모두 0이라 공휴일로 인한 체계적 하향 효과를 적용할 근거가 없습니다. is_friday는 5일차에만 1로 관측되며 학습상 금요일은 대체로 Ŷ_base보다 수요를 수천명 수준으로 끌어올리는 경향이 있어 이번에도 소폭 상향 기여가 합리적입니다.", "reflect": "hol_kr_wd에 붙였던 라벨은 원래대로 neutral이 맞습니다. 잔차가 7일에 걸쳐 비슷한 방향으로 분포되어 있고 hol_kr_wd는 모든 날짜가 0이라 이 잔차를 설명하지 못합니다. is_friday의 5일차 값이 1이긴 하지만 잔차는 특정일에 몰려 있지 않고 오히려 초반(1~3일)에 더 크게 나타나므로, 5일차만을 근거로 한 weak_up 라벨은 타당하지 않습니다."}, {"date": "2026-03-16", "verdict": "better", "days": [{"md": "03-16", "wd": "월"}, {"md": "03-17", "wd": "화"}, {"md": "03-18", "wd": "수"}, {"md": "03-19", "wd": "목"}, {"md": "03-20", "wd": "금"}, {"md": "03-21", "wd": "토"}, {"md": "03-22", "wd": "일"}], "context": [28538, 28205, 25292, 37003, 45281, 40080, 35404, 39956, 39829, 42593, 44524, 45256, 39215, 36198, 24692, 40034, 45407, 46549, 47282, 43073, 37174, 42319, 41744, 42201, 44573, 47974, 44798, 38753], "base": [37828, 43121, 44222, 45048, 45254, 43490, 38676], "fc": [37828, 43121, 44222, 45048, 47254, 43490, 38676], "gt": [43405, 40918, 45127, 51103, 54330, 45006, 38588], "heat": {"rows": [{"ko": "is_friday", "role": "day", "cells": [{"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "상향", "o": 1}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}], "quiet": 1}, "fixes": [], "r_attr": "hol_kr_wd의 향후 7일 값이 모두 0으로 공휴일(홀일) 효과가 관측되지 않아 이번 window에서 유의한 하향 기여 근거가 없습니다. is_friday는 5일차에만 1로 나타나고 최근 수준이 높은 구간이므로 금요일의 플러스 효과(수천명 단위)가 일부 설명 가능해 약한 상향 기여로 판단합니다.", "reflect": "잔차가 주로 4~5일차에 큰 양(특히 5일차 9076, 4일차 6055)으로 몰려 있고 hol_kr_wd의 향후 값은 전부 0이라 그 피처로는 설명되지 않습니다. is_friday는 5일차에만 1으로 활성화되어 있어 5일차의 큰 잔차를 설명하므로 그날의 상향 라벨만 강화하는 것이 타당합니다."}], "cases_lb": [{"date": "2026-04-06", "verdict": "worse", "days": [{"md": "04-06", "wd": "월"}, {"md": "04-07", "wd": "화"}, {"md": "04-08", "wd": "수"}, {"md": "04-09", "wd": "목"}, {"md": "04-10", "wd": "금"}, {"md": "04-11", "wd": "토"}, {"md": "04-12", "wd": "일"}], "context": [42319, 41744, 42201, 44573, 47974, 44798, 38753, 43405, 40918, 45127, 51103, 54330, 45006, 38588, 43650, 42007, 47943, 49478, 52525, 49508, 39952, 43666, 44327, 51690, 55904, 57636, 53178, 41484], "base": [44233, 46259, 50498, 54430, 55907, 49863, 41221], "fc": [44233, 46259, 50498, 54430, 59907, 49863, 41221], "gt": [42878, 43300, 48877, 47760, 48843, 46780, 37795], "heat": {"rows": [{"ko": "is_friday", "role": "day", "cells": [{"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "상향", "o": 1}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}], "quiet": 1}, "fixes": [], "r_attr": "hol_kr_wd의 향후 값이 모두 0이라 공휴일 영향이 관측될 근거가 전혀 없습니다. is_friday는 5일차에만 1로 나타나며, 훈련 지식에 따르면 금요일은 특히 수요가 높은 시기에 수천명 단위의 상향 잔차를 만드는 경향이 있어 이번 창(window)의 수준이 비교적 높은 편인 점을 고려해 약한 상향 기여로 판단했습니다.", "reflect": "잔차가 7일 내내 음수(모두 실제 < Ŷ_base)로 같은 방향으로 깔려 있어 특정일 이벤트가 아니라 Ŷ_base의 수준 편향으로 보입니다. hol_kr_wd는 향후 모두 0이라 설명 근거가 없고, is_friday는 5일차에만 1인데 과거 지식상 금요일은 상향 잔차를 만들므로 그날의 음성 잔차와 정반대여서 is_friday로 설명되지 않습니다. 따라서 원래의 상향 라벨은 근거가 부족합니다."}, {"date": "2026-03-23", "verdict": "better", "days": [{"md": "03-23", "wd": "월"}, {"md": "03-24", "wd": "화"}, {"md": "03-25", "wd": "수"}, {"md": "03-26", "wd": "목"}, {"md": "03-27", "wd": "금"}, {"md": "03-28", "wd": "토"}, {"md": "03-29", "wd": "일"}], "context": [39956, 39829, 42593, 44524, 45256, 39215, 36198, 24692, 40034, 45407, 46549, 47282, 43073, 37174, 42319, 41744, 42201, 44573, 47974, 44798, 38753, 43405, 40918, 45127, 51103, 54330, 45006, 38588], "base": [40584, 42898, 45101, 47945, 48837, 43790, 38860], "fc": [40584, 42898, 45101, 47945, 50837, 43790, 38860], "gt": [43650, 42007, 47943, 49478, 52525, 49508, 39952], "heat": {"rows": [{"ko": "is_friday", "role": "day", "cells": [{"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "상향", "o": 1}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}], "quiet": 1}, "fixes": [], "r_attr": "향후 7일간 hol_kr_wd가 모두 0로 관측되어 공휴일에 의한 하향 효과를 기대할 근거가 없으므로 모두 neutral입니다. is_friday는 5일차에만 1로 나타나며, 훈련에서 금요일은 통상 수천명 단위의 상향 기여를 보였으나 단일 일 활성화이고 수준 불확실성이 있어 보수적으로 약한 상향(weak_up)으로 판단했습니다.", "reflect": "잔차가 특정일(5일차)에 몰려 있지 않고 1~7일에 걸쳐 대체로 양수(특히 1,3,5,6일에 큰 값)를 보이며 금요일(5일차)만의 급등 패턴이 아닙니다. hol_kr_wd는 향후 7일 모두 0으로 해당 피처가 이번 잔차를 설명할 근거가 전혀 없고, is_friday는 5일차에만 1이지만 잔차가 여러 날에 걸쳐 분포하므로 금요일 활성화만으로 잔차를 설명하기 어렵습니다."}, {"date": "2026-02-09", "verdict": "better", "days": [{"md": "02-09", "wd": "월"}, {"md": "02-10", "wd": "화"}, {"md": "02-11", "wd": "수"}, {"md": "02-12", "wd": "목"}, {"md": "02-13", "wd": "금"}, {"md": "02-14", "wd": "토"}, {"md": "02-15", "wd": "일"}], "context": [26050, 24860, 26862, 28069, 30414, 27199, 24489, 27213, 25810, 27905, 28998, 31529, 28981, 25352, 26272, 26309, 28853, 28288, 29916, 28687, 27243, 30145, 30384, 31857, 31417, 32328, 31167, 27726], "base": [29201, 29948, 30905, 31230, 31668, 30118, 28053], "fc": [29201, 29948, 30905, 31230, 33668, 30118, 28053], "gt": [29112, 28222, 29307, 28869, 33869, 37932, 37401], "heat": {"rows": [{"ko": "is_friday", "role": "day", "cells": [{"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "상향", "o": 1}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}], "quiet": 1}, "fixes": [], "r_attr": "hol_kr_wd의 향후 7일 값이 모두 0이므로 공휴일로 인한 하향 편향을 기대할 근거가 없습니다. is_friday는 5일차에만 1로 나타나 훈련에서 보인 금요일의 소폭 상향(수천명 수준) 경향과 일치하지만 단일 금요일에 그치고 전체 수준이 극단적이지 않아 영향은 약하다고 판단됩니다.", "reflect": "잔차가 6~7일차에 크게 몰려 있어 그 큰 상향분은 Ŷ_base의 오차(피처들이 설명하지 못한 부분)로 보입니다. 다만 5일차에만 is_friday가 1이었고 잔차도 소폭 플러스(+2201)여서 그 날의 약한 상향은 is_friday로 설명될 수 있으므로 해당 라벨만 유지합니다."}]}], "kpi": {"mae_base": 4397, "mae_fc": 3706, "gain": -15.70448428793449, "better": 6, "n": 6, "daily": 37529, "err_pct": 9.875883718267112}, "sd": 5734, "perday": {"start": "2026-05-04", "end": "05-10", "days": [{"md": "05-04", "wd": "월"}, {"md": "05-05", "wd": "화"}, {"md": "05-06", "wd": "수"}, {"md": "05-07", "wd": "목"}, {"md": "05-08", "wd": "금"}, {"md": "05-09", "wd": "토"}, {"md": "05-10", "wd": "일"}], "rows": [{"ko": "한국 평일 공휴일", "cells": [{"t": "—", "o": 0}, {"t": "큰 하향", "o": -2}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}, {"ko": "is_friday", "cells": [{"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "—", "o": 0}, {"t": "상향", "o": 1}, {"t": "—", "o": 0}, {"t": "—", "o": 0}]}]}, "chain": {"past_date": "2026-02-16", "past_reflect": "잔차가 처음 3일에 음수로 크게 몰려 있고(−7.4k, −6.8k, −9.0k), 그 3일에 hol_kr_wd=1으로 연속 공휴일 표기가 있었으므로 hol_kr_wd의 강한 하향 기여가 맞습니다. 5일차 잔차가 크게 양수(+11.7k)이고 그날만 is_friday=1이므로 is_friday는 약한 상향이 아니라 강한 상향 기여로 보는 것이 맞습니다. 나머지 날들의 잔차는 해당 피처들과 일치하지 않아 neutral로 내려야 합니다.", "now_date": "2026-05-04", "now_quote": "2일차(hol_kr_wd=1)은 과거 훈련에서 공휴일에 수천~만단위의 음의 잔차가 반복되어 하향 조정 근거가 뚜렷하므로 보수적으로 약 −6,000명만 내렸습니다.", "shared": ["한국 주말·공휴일", "한국 평일 공휴일"]}, "know": {"호텔 요금": "훈련표본에서 일별 평균 호텔가격(hotel_price)이 매우 높을 때(대략 일별 평균값이 약 500,000원 이상 — 관찰군에서 500k~620k 범위) 실제 입국자수가 TSFM의 타깃-과거만 기반 예측보다 꾸준히 더 높게 나타나는 경향이 있습니다(보통 수천~만 단위 플러스 기여, 대표적으로 몇천에서 1만여명 수준, 드물게 1.8만명 안팎까지). 반대로 호텔가격이 낮거나 보통 수준(약 370,000원~420,000원)일 때는 실제가 예측보다 낮게 나오는 경향이 있어 음(-)기여가 발생하는 경우가 많으며 규모는 보통 수백에서 수천명(수천 내외, 관찰에서는 -1k~-9k 범위의 일별 차이가 반복됨)입니다. 중간 구간(약 420k~500k)에서는 방향성이 일정하지 않아 이 피처의 기여가 사실상 미미하거나 불확실합니다. 이러한 판단에 대한 확신은 중간 정도로, 여러 독립 관찰에서 높은 가격 상태가 반복적으로 잔차를 위(플러스)쪽으로 밀어낸다는 일관된 신호가 있으나 예외(가격이 높아도 잔차가 작거나 반대인 사례)도 있어 인과라기보다는 상관성으로 해석하는 것이 안전합니다; 따라서 예측시점에 관측되는 호텔가격이 위/아래의 기준에 들면 본 피처는 위에서 말한 범위만큼 잔차에 추가 기여할 가능성이 높고, 중간값 근처에서는 거의 기여하지 않을 것으로 보입니다.", "원/달러": "훈련 관찰 전체를 보면 원/달러 환율(fx_usd) 값의 높고 낮음이 잔차(실제−타깃과거만으로 예측한 값)의 일관된 방향을 만들지 못합니다. 예를 들어 환율이 1,500원 안팎으로 높은 구간에서도 잔차가 양·음으로 섞여 있고, 환율이 1,420–1,460원처럼 낮은 상태에서도 잔차의 부호와 크기가 크게 변동하여 한 상태에서 항상 실제가 예측보다 위로 또는 아래로 치우친다고 말할 근거가 약합니다. 아주 약한 경향이 있다면 극히 높은 환율(약 1,500원 이상)일 때 일부 기간에서 실제가 예측보다 높은 쪽(상승 기여)으로 나타난 사례가 있으나 그 크기와 발생 여부가 윈도우마다 크게 다르고(수천 단위로 플러스·마이너스가 섞임) 동행성 외의 인과적 근거도 부족하여 실무적 기여로 쓰기엔 불안정합니다. 따라서 현재 관찰로는 fx_usd를 보아 예측값을 체계적으로 위·아래로 조정할 만한 신뢰할 만한 효과를 추정할 수 없으며, 대부분의 환율 상태에서 기여는 사실상 없음에 가깝다고 판단합니다.", "원/위안": "학습 관찰을 보면 fx_cny(원/위안)가 낮은 상태(약 205–209)와 높은 상태(약 216–221) 양쪽에서 잔차가 플러스·마이너스 모두 섞여 나타나고, 동일한 환율 수준에서도 잔차의 부호와 크기가 크게 달라지므로 이 피처는 잔차의 일정한 수준(예: 예측을 일관되게 올리거나 내리는 기여)을 설명하지 못합니다. 따라서 예측 시점에 관측 가능한 fx_cny 값만으로는 실제가 일관되게 예측보다 높아지거나 낮아진다고 판단할 근거가 없고, 실무적으로 이 피처의 예측 기여는 사실상 없음(영에 가까움)으로 봐야 합니다. 확신도는 높음: 같은 환율 구간에서 큰 양·음 잔차가 공존하고, 환율 변화와 잔차의 방향성이 반복되는 패턴이 관찰되지 않기 때문입니다.", "원/엔": "학습 관찰을 보면 원/엔(100엔당) 값이 상대적으로 높은 상태(대략 945 이상)에 있으면 실제 입국자 수가 TSFM의 타깃-과거만 기반 예측보다 체계적으로 더 높게 나오는 경향이 있습니다(상승 기여). 반대로 비교적 낮은 값(대략 925 이하)에서는 잔차가 음수이거나 중립적인 경우가 더 많아 엔화가 약할 때는 하방 또는 무기여 경향이 있습니다. 상태 간 차이 규모는 큰 편으로, 낮은 상태에서 높은 상태로 옮겨갈 때 통상적으로 수천 명 단위(대략 +2천에서 +1만 명대의 범위)까지 상승 기여가 관찰되며 일부 기간엔 그 이상으로 크게 튀기도 합니다. 다만 패턴이 완전히 일관되지는 않아 휴일·계절 변동과 타깃의 이미 반영된 추세가 섞여 있고 몇몇 표본에서는 상반된 잔차가 나오므로 인과를 단정하기는 어렵습니다(중간 정도의 신뢰도). 예측 시점에 관측되는 환율이 중간 범위(약 930–945)일 경우에는 이 피처의 기여는 사실상 미미하거나 불확실해 예보에 거의 쓸모가 없을 가능성이 큽니다.", "중국 공휴일": "hol_cn(중국 주말/공휴일 여부)는 훈련표본에서 잔차의 절대 크기와는 연관이 있으나 그 방향이 일정하지 않아 단일한 편향 기여로 사용하기 어렵습니다. 일부 기간(주로 중간~후반의 대규모 성수기 구간)에는 hol_cn=1일 때 실제가 예측보다 크게(+수천~만 단위) 높았고, 다른 기간(초반의 저수요 구간이나 급락 구간)에는 hol_cn=1일 때 실제가 오히려 예측보다 낮게(−수천~만 단위) 나오는 사례가 반복됩니다. 따라서 hol_cn이 관측될 때마다 일정한 위/아래 방향의 보정을 적용하면 오히려 오류를 키울 가능성이 높으며, 이 피처의 기여는 시점별 트렌드·계절·특정 이벤트와 강하게 혼재되어 있어 단독 인과효과를 신뢰하기 어렵습니다. 즉, hol_cn은 개별 관측에서 잔차의 크기·방향을 바꿀 수는 있으나 그 크기는 몇 천에서 일만여 명 범위로 넓게 변하고(양·음 모두 관찰됨), 안정적인 기여가 없다고 보는 것이 타당하며, 트렌드나 시즌성이 이미 잘 반영된 이전28일의 정보와 함께 검사해 구간별(예: 대성수기·비수기)으로만 제한적으로 사용해야 효과가 있을 것입니다.", "일본 공휴일": "학습 관찰을 보면 hol_jp가 1일 때 항상 한 방향으로 잔차가 움직이지는 않지만, 고(高)수준 기간(학습 중 후반의 대규모 입국자 시기: 관찰 9~14, 18 등)에서는 hol_jp=1인 날에 실제가 예측보다 눈에 띄게 높게 나오는 경향이 있어 이 상태는 보통 예측을 위로 밀어올리는 역할을 하며 그 크기는 대체로 수천명에서 만여명 수준의 범위(대체로 +1k~+12k)까지 나타났습니다. 반대로 저(低)수준 기간이나 급락·비정상 변동이 있는 기간(학습 전반부 일부, 긴 하락 국면)에는 hol_jp=1이 잔차를 낮추거나 큰 영향을 주지 않는 경우가 섞여 있어 일관된 방향성을 확인하기 어렵습니다. 따라서 hol_jp=1이 예측을 위로 기여할 가능성은 있으나 그 효과는 계절·수준(기저 수준이 높은 시기)에 강하게 의존하므로 확신도는 중간 정도이며(부분적 근거), hol_jp가 0인 상태나 이미 지난 28일(타깃 과거치)이 휴일 효과를 충분히 반영하고 있는 경우에는 이 피처의 추가 기여는 사실상 없다고 보는 것이 합리적입니다.", "미국 공휴일": "hol_us가 1(미국 주말/공휴일)일 때 예측보다 실제가 일관되게 높아지는 방향의 기여가 종종 관찰되지만 매우 불안정하고 시기 의존적입니다. 훈련 관측을 보면 hol_us=1인 날에 잔차가 큰 양수(수천~만 단위)로 튀는 경우가 다수 있으나 동일한 상태에서 음의 잔차도 반복적으로 나타나므로 기여가 항상 발생한다고 보기는 어렵습니다. 대략적으로는 hol_us=1일 때 평균적으로 수백에서 수천(보통 1천~8천)명 수준으로 위쪽으로 밀어주는 경향이 있는 반면, 일부 구간에서는 역방향(-수천)으로 작용하기도 하므로 이 피처의 독립적 효과를 강하게 확신하긴 어렵습니다. hol_us=0일에는 특이한 일관된 방향성이 관찰되지 않아 실질적 기여가 사실상 없는 경우가 많습니다. 결론적으로 hol_us=1은 예측을 위로 밀어올릴 가능성이 높지만 매우 노이즈가 크고 시점에 따라 반대 효과가 나올 수 있어 낮은 신뢰도로만 부분 반영해야 합니다.", "한국 주말·공휴일": "훈련 관찰 전체에서 hol_kr(한국의 주말/공휴일 여부)는 예측 잔차의 방향을 일관되게 설명하지 못합니다: horizon에서 hol_kr=1인 날들에서는 실제가 예측보다 크게 높은 사례(잔차가 수천~만 단위로 +6k~+12k급까지)와 크게 낮은 사례(잔차가 수천~만 단위로 −5k~−11k급까지)가 모두 관찰되어, 특정 상태가 항상 위(또는 아래)로 기여한다고 보기는 어렵습니다. 다만 hol_kr=1일에 잔차 절대값이 커지는 경향(즉, 편향 방향은 불규칙하지만 변동성이 증가함)은 일부 관찰에서 반복되므로 휴일 표지가 예측 오류의 크기를 키울 수는 있으나 그 방향을 안정적으로 보정할 수 있을 정도로 신뢰할 수는 없습니다. 이전 28일의 타깃 값이 이미 강한 상승·하강 추세나 계절 패턴을 담고 있는 경우에는 hol_kr에 의한 추가 기여는 사실상 없거나 다른 효과에 섞여 판별 불가합니다. 전반적으로 이 피처만으로 일정한 위/아래 기여를 적용하기에는 근거가 부족하므로, 사용 시에는 방향성 보정보다는 휴일일에 예측 불확실성이 커진다는 정보로만 제한적으로 신뢰하는 것이 타당합니다.", "한국 평일 공휴일": "hol_kr_wd가 예측 시점의 향후 날짜에 1(평일에 끼어 있는 관공서 공휴일)로 관측되면, 실제 방문객 수는 TSFM이 과거 28일 타깃만 보고 낸 예측보다 체계적으로 낮아지는 방향으로 기여합니다(즉 이 피처는 아래로 기여). 훈련 샘플에서는 홀일에 대응하는 잔차가 대체로 수천~만단위 음수로 나타나며 흔한 범위는 약 −6,000에서 −11,000명 정도(극단적 표본에서 −12,000명 안팎까지)로 추정됩니다; 공휴일이 연속적으로 이어진 경우(여러 일 연속 1)에는 더 큰 음성 기여가 관찰됩니다. 반대로 hol_kr_wd가 0일 때는 잔차의 부호·크기가 혼재되어 있어 이 피처에 의한 일관된 보정은 기대되지 않습니다. 표본 수가 많지 않아(훈련 관찰 중 향후 1이 관측된 독립 샘플이 몇 건뿐) 불확실성은 중간 수준이며, 교란(예: 동시의 다른 행사나 계절 변화) 가능성을 배제할 수 없으므로 실무에서는 하향 보정을 우선 권고하되 크기는 위 범위 안에서 보수적으로 적용하고 추가 데이터로 재확인할 것을 권합니다.", "콘서트": "예보 시점에 알려진 하루 콘서트 수용인원(concert_cap)이 없는 상태(0)일 때는 이 피처의 기여는 사실상 없다(잔차에 일관된 편향을 만들어내지 않음). 반면에 미래에 큰 공연 수용이 예약되어 있는 상태에는 실제가 TSFM의 과거-타깃 기반 예측보다 체계적으로 높게 나타나는 경향이 뚜렷하다: 중간급 규모(대략 15,000–35,000명)의 경우 예측을 위로 밀어올리는 몫이 대체로 수천명 수준(대략 +1,000에서 +8,000명 범위, 일부 경우 최대 10–12천명까지)이고, 매우 큰 수용(약 44,000명 이상 등)은 보다 큰 플러스 기여(+5,000에서 +15,000명 이상까지)를 자주 동반한다. 반면에 소규모 예약(수천명, 예: 2,500–5,000명)에서는 잔차의 부호와 크기가 일관되지 않아 이 피처의 실질적 기여는 거의 없거나 불확실(±수천명 수준으로 우연적)하다고 보는 것이 타당하다. 이러한 판단의 확신도는 중간(완전하지는 않음)으로, 여러 독립 관찰에서 큰 concert_cap일 때 잔차가 반복적으로 양수로 치우친다는 점이 근거이나 일부 예외와 과거 타깃의 추세·휴일효과 등이 혼입될 수 있어 모든 사례에 절대적 인과를 부여하긴 어렵다.", "중국노선 항공편": "flight_cn이 비교적 많을 때(대략 일별 항공편이 130대 이상으로 관측되면) 실제 입국자 수는 TSFM의 타깃 과거값만으로 한 예측보다 체계적으로 ‘위로’ 치우치는 경향이 있으며, 그 몫은 보통 수천~만단위 수준으로 나타납니다(일반적 범위는 +2천에서 +1만2천 사이, 극단적으로 관찰된 상한은 약 +1만8천 전후). 반대로 항공편수가 낮게 관측될 때(대략 115대 이하)에는 실제가 예측보다 낮아지는 방향으로 기여하는 경향이 있으며 보통 −1천에서 −9천 수준(드물게 −1만 이상)까지 나타납니다. 항공편수가 중간(약 121–128대)으로 안정적일 때는 잔차 수준에서 특이한 차이를 만들지 않아 실질적 기여가 거의 없거나 미미합니다. 이 판단은 train 샘플 전체에서 flight_cn가 높은 상태일수록 잔차가 양(실제>예측)으로 치우치고 낮은 상태일수록 음(실제<예측)으로 치우친 패턴이 반복되어 도출되었으나 예외가 있어 완전한 인과 증거는 아니므로 확신도는 중간 수준입니다; 특히 이전28일의 타깃 흐름이 이미 큰 급등·급락을 담고 있으면 flight_cn의 추가 기여는 작아지는 경향이 있습니다.", "일본노선 항공편": "train 관찰을 보면 flight_jp가 비교적 높을 때(관찰 시점에 관측 가능한 미래 편도 항공편 수가 대체로 153편 이상인 상태) 실제값이 TSFM의 타깃-과거만 예측보다 체계적으로 위로 치우치는 경향이 있고(대체로 예측보다 플러스 기여, 보통 수천명에서 만여명 단위: 대략 +1천에서 +12천 수준이 흔하고 극단적 사례는 몇 만명까지 열릴 수 있음), 반대로 flight_jp가 낮을 때(대략 142편 이하)에는 실제가 예측보다 낮게 나오는 경향이 있어 마이너스 기여를 주며(대략 −0.5천에서 −9천 정도가 자주 관측됨). 중간값대(약 145–152편)에서는 관찰된 잔차가 작거나 부호가 섞여 있어 이 피처의 순기여는 사실상 미미하거나 불확실합니다. 이 패턴에 대한 확신은 중간 정도로(여러 독립 표본에서 일관된 방향성은 보이나 요일·휴일·계절 등 다른 요인과 일부 혼입 가능성 있음) 따라서 실전 사용 시 flight_jp가 153편 이상이면 예측을 위로 보정하는 쪽을, 142편 이하면 아래로 보정하는 쪽을 우선 고려하되 중간 구간에서는 보정량을 작게 하거나 다른 지표와 교차검증할 것을 권합니다.", "미국노선 항공편": "train 관찰 전체를 보면 미국발 항공편수(flight_us)의 관찰 가능한 상태(대략 33–47편 범위)에 따라 실제 arrivals가 TSFM의 타깃-과거만 기반 예측보다 꾸준히 위(상향 기여) 또는 아래(하향 기여)로 치우치는 일관된 패턴은 나타나지 않습니다. 동일하거나 높은 편수 상태에서 양(플러스)·음(마이너스) 잔차가 모두 관찰되며, 때로는 몇천에서 만단위 수준의 편차가 나오기도 하나 이는 특정 편수 값의 상태에 귀속할 만한 안정적 몫으로 분리되기 어렵습니다. 결론적으로 이 피처는 주어진 train 자료에서는 예측 오차의 일부를 설명해줄 만한 규칙적 기여를 보이지 않으므로 예보 입력으로서의 추가적 설명력은 사실상 없다고 판단합니다(확신도 높음). 다만 극단적 축적 이벤트나 휴일 효과 등과 함께 나타날 경우 개별 관측에서 수천~만단위까지 잔차에 기여할 가능성은 배제할 수 있으나, 그 기여를 flight_us 단독 상태로 예측·조정할 근거는 없습니다.", "국제선 총 항공편": "train 관찰을 보면 예측에 포함되지 않은 flight_total 값이 크면(예측 시점에 관찰 가능한 미래-스케줄 값의 평균이 대략 555 이상일 때) 실제가 TSFM의 과거-타깃 기반 예측보다 체계적으로 더 크게 나오는 방향으로 기여하고, 반대로 flight_total이 작을 때(대략 530 이하) 실제가 예측보다 낮게 나오는 방향으로 기여하는 경향이 있습니다. 규모는 상태 간 차이로 볼 때 높은 상태에서는 일반적으로 일별 잔차가 수천명 단위의 상향 보정(+약 2천∼+1만명, 드물게 그 이상을 넘는 사례 존재)을 만들어내고, 낮은 상태에서는 수천명 단위의 하향 보정(-약 1천∼-9천명 수준)이 나타나는 편입니다. 중간 범위(대략 535±10 수준)에서는 관찰된 잔차의 평균 차이가 거의 없어 이 피처의 추가 기여가 사실상 없다고 판단됩니다. 다만 계절·휴일·급격한 수요변동과 일부 예외(같은 높은 flight_total에서도 예측이 과대·과소인 사례)가 섞여 있어 인과성까지 확정하긴 어렵고, 패턴 신뢰도는 ‘중간’ 수준이라고 보아야 합니다.", "기온": "훈련기간 관찰을 보면 서울 평균기온이 분명히 높은 여름 수준(대략 8℃ 이상, 특히 10℃~20℃대일 때)일수록 실제 입국자 수가 TSFM의 타깃-과거값 전용 예측보다 체계적으로 더 크며 그 몫은 대략 수천명 규모(관측치들 기준으로 관찰당 대략 +2천에서 +1만~+1.8만명 수준의 범위에서 주로 플러스 방향 기여)라는 신호가 반복됩니다. 반대로 기온이 낮아 영하권(대략 0℃ 이하, 특히 −3℃에서 −9℃ 사이)일 때는 실제가 예측보다 지속적으로 낮아져 음의 기여를 보이며 규모는 대략 −2천에서 −9천명 수준으로 주로 음의 효과를 냈습니다. 중간의 온화한 상태(대략 2℃~6℃ 정도)에서는 잔차의 부호·크기가 섞여 있어 이 피처가 사실상 추가 기여를 만들지 않는 경우가 많아 예측상 큰 영향이 없다고 보아야 합니다. 다만 계절·휴일·추세가 과거 타깃값에 일부 반영되어 있고 일부 관찰에서 크고 이례적인 잔차가 섞여 있어(잡음과 교란 가능성) 위 패턴에 대한 확신은 중간 정도이며, 좁은 의미의 인과 증거는 부족하므로 실무에서는 위 조건(고온→상승, 저온→하강, 중간온도→무효)을 가이드로 삼되 다른 계절성 신호와 함께 교차검증해 쓰시기 바랍니다.", "강수": "훈련표본을 보면 w_seoul_SUMRN(서울 일강수량 합계)는 대부분의 경우에 잔차 변동과 일관된 방향으로 결부되지는 않아 전반적 영향은 약하고 불안정합니다. 다만 관찰치들 가운데 눈에 띄는 높은 강수(대략 일별 합계가 8–20 mm 수준인 경우)는 일부 샘플에서 실제가 TSFM의 타깃-과거만 기반한 예측보다 위로 크게 벗어나는(수천에서 만 단위까지) 사례들과 동행하는 경향이 있었습니다(즉 위로 기여하는 방향, 범위 대략 +2k에서 +12k 수준까지). 반대로 낮은 강수(대체로 ≤1 mm) 상태에서는 별다른 체계적 기여가 관찰되지 않아 기여가 사실상 없다고 보는 편이 합리적입니다. 그러나 이 높은-강수 → 초과(positive) 관계는 표본 전체에 걸쳐 일관되지 않고 계절적 상승·급증(휴가철 등)이나 타 변수들과 섞여 있을 가능성이 높아 인과적 확신은 낮습니다; 따라서 운영적 판단에서는 ‘강수량이 아주 작을 때는 기여를 무시하고, 매우 큰 강수 값이 있을 때만 잠재적으로 예측을 위로 밀어올릴 수 있으나 그 신뢰도는 낮다’고 처리하는 것이 적절합니다.", "풍속": "훈증(관측) 전체를 보면 서울 일평균 풍속이 비교적 높게 관측될 때(대략 3.0 m/s 이상) 실제 입국자수가 TSFM의 타깃-과거만 기반한 예측보다 체계적으로 더 크게 나오는 경향이 있다 — 보정량은 보통 몇 천 명 수준(대략 +2천에서 +8천 사이가 흔하고, 드문 사례에서는 +1만 명 이상까지 확대됨)이다. 반대로 낮은 풍속(대략 1.5–2.5 m/s) 상태에서는 잔차의 부호와 크기가 섞여 있어 일관된 기여를 주장하기 어렵고, 이 범위에서는 사실상 기여가 없거나 매우 작다고 보는 편이 합리적이다. 다만 이 신호는 시기(계절·급증기 등)와 타깃의 수준 변동과 섞여 있어 잡음이 크므로 확신도는 중간 이하이며(약간의 근거는 있으나 인과관계는 약함), 예측 시점에 관측되는 풍속이 3 m/s 이상이면 상향 보정을 고려하고, 1.5–2.5 m/s이면 별도 조정 없이 타깃-기반 예측을 신뢰해도 무방하다.", "습도": "훈련 관찰을 보면 서울의 일평균 상대습도(w_seoul_AVGRHM)가 뚜렷한 신호를 주는 경우는 극단적 상태에서만 일부 기대할 만합니다: 대체로 높은 습도(약 70% 이상, 특히 75–90%대)가 관측될 때 실제 입국자는 동일한 타깃 과거값만으로 만든 예측보다 체계적으로 더 높게 나오는 경향이 있고(특히 성수기 급증기엔 잔차가 플러스로 수천에서 많게는 1만여명대까지 더해진 경우가 있음), 반대로 낮은 습도(약 35–45% 이하)일 때는 실제가 예측보다 낮게 나오는 경향이 있습니다. 상태 간 차이(즉 고습 대비 저습의 기여 규모)는 관찰에 따라 수천명 단위로 누적되며 보통 몇 천명에서 만명 수준까지 벌어지는 경우가 있으나 일별·사건별 변동이 커 확신도는 중간(부분적) 수준입니다. 습도가 중간 범위(약 50–65%)일 때는 잔차 패턴이 뚜렷하지 않아 이 피처의 기여는 사실상 무시해도 무방합니다; 다만 잔차에는 요일·휴일·계절적 요인과 과거 타깃의 추세가 섞여 있고 일부 관찰에서는 습도와 잔차가 일관되게 맞물리지 않으므로, 고·저습 상태에서의 추가 조정은 보수적으로 수천명 범위로만 반영하시길 권합니다.", "기압": "훈련표본 전체에서 이 피처(서울 일평균 해면기압)는 일관된 방향성을 보이지 않아 강한 설명력을 주장하기 어렵습니다. 다만 매우 낮은 기압(대략 1010–1015 hPa 수준)일 때 일부 독립 관찰에서 실제가 대상의 과거값만 쓴 예측보다 유의하게 더 크게 나와(위로 기여) 수천~만 단위 수준의 플러스 잔차를 만들었던 사례들이 있고, 반대로 낮은 기압 구간에서도 반대 부호의 큰 음(실제 < 예측) 잔차가 나타난 관찰이 있어 패턴이 안정적이지 않습니다. 대체로 1018–1028 hPa 범위의 보통 수준에서는 이 피처가 잔차 수준을 체계적으로 밀어 올리거나 내리는 효과가 거의 없다고 보는 편이 타당하며(기여 실질적 없음), 매우 극단적 저기압이나 일부 시기별 동시변동이 섞인 경우에만 수천에서 만 단위까지 기여가 관찰되지만 그 방향과 크기는 표본 간에 엇갈려 확신도는 낮습니다.", "일사": "훈련표본을 보면 서울의 일사량(w_seoul_SUMGSR)이 뚜렷히 높은 상태(대략 >15 MJ/m²)일 때 실제 입국자 수가 TSFM의 타깃-과거만 기반 예측보다 일관되게 높아지는(예측을 위로 보정하는) 경향이 있고 그 몫은 대략 수천~1만여명(+2k에서 +12k 수준의 범위)이다. 반대로 일사량이 낮은 상태(대략 <6 MJ/m²)일 때는 실제가 예측보다 낮게 나오는 경향이 있어 음의 기여(대략 −2k에서 −9k 범위)가 관찰된다. 중간값(약 6–15 MJ/m²)에서는 잔차가 명확히 달라지지 않아 이 피처의 추가 기여는 사실상 작거나 불확실하다. 다만 이 판단의 확신은 ‘중간 정도’로, 계절적 추세·휴일·요일 효과와 타깃의 과거28일 값이 일부 패턴을 이미 담고 있어 상관이 인과를 보장하지 않고 몇몇 사례(예: 높은 일사량인데 음의 잔차, 또는 낮은 일사량인데 양의 잔차)도 존재한다. 따라서 예측 시에는 일사량이 15 MJ/m²를 넘으면 예측을 수천에서 만 단위로 상향(보수적으로는 +2–+6k), 6 MJ/m² 미만이면 수천 단위 하향(−2–−9k)을 고려하되, 과거 타깃 추세와 휴일/특별행사 정보를 함께 확인해 교차검증할 것을 권한다.", "적설": "훈련표본을 보면 이 피처는 눈이 전혀 없을 때(값=0)에는 예측(타깃 과거값만 모델)이 이미 잡는 수준에 추가적인 영향을 거의 주지 않으며, 관찰상 잔차의 중앙값이나 방향성이 눈무와 무관하게 분포한다는 점에서 기여는 사실상 0이라고 보는 것이 합리적입니다. 반면 관측된 적설이 존재할 때에는 대체로 실제가 모델 예측보다 더 높게 나오도록(상향 기여) 작용하는 경향이 있으며, 약한 적설(대략 0.5–3 cm)에서는 일별 기여가 수백~수천명(주로 수백에서 ~3천명) 수준으로 작게 위로 편향되는 사례가 더 많고, 다소 강한 적설(약 4–6 cm 이상)이면 더 큰 상향 기여(종종 천여명에서 수천~만단위의 일시적 증가까지 관찰됨)로 이어진 경우도 있지만 크기와 일관성은 사례별로 크게 흔들려 확신도는 낮습니다. 또한 일부 적설 사례에서는 실제가 오히려 예측보다 낮게 나온 경우도 있어(따라서 적설이 항상 상향 효과를 낸다고 단정할 수 없음) 이 피처의 기여 추정은 조건부적이고 불확실합니다: 값이 0이면 기여는 무시해도 되고, 값이 0보다 클 때는 보통 상향(보수적으로 수백~몇천명 범위)으로 작용할 가능성이 크나 큰 진폭(수천~만명급)은 드문 이상치에 의해 발생할 수 있어 신뢰도는 중간에서 낮음입니다.", "운량": "w_seoul_AVGTCA가 매우 높을 때(대략 7 이상) 모델의 타깃-과거만 기반 예측보다 실제 입국자가 일관되게 더 많이 나오는 경향이 관찰됩니다(보통 관측군에서는 수천명 단위의 상향 기여, 일반적으로 +2천~+1만명 범위; 드문 경우 더 큰 편차가 있었습니다). 반대로 매우 낮은 값(대략 0–1)일 때는 실제가 예측보다 적게 나오는 경향이 있어 음의 기여를 주며 규모는 보통 -1천~ -9천명 정도로 관찰됩니다. 중간 수준(약 2–6)에서는 잔차에 일관된 방향성이 거의 없고 기여가 사실상 없다고 보는 편이 합리적입니다. 위 판단의 확신도는 중간 수준으로, 여러 독립적 예측 창에서 유사한 상관이 반복되지만 예외도 자주 섞여 있고 요일·휴일·추세와 혼재될 가능성이 있어 인과적 확증은 부족합니다.", "is_friday": "훈련 관찰을 보면 is_friday=1(예보 시점에 알 수 있는 금요일인 경우)일 때 실제가 TSFM의 과거-타깃만 기반한 예측보다 체계적으로 더 높게 나오는 경향이 뚜렷합니다. 특히 수요가 큰 시기(관찰 중 중·후반 고성수기 구간)에서는 금요일의 잔차가 대체로 플러스로 나타나 예측에 위로 기여하며 그 규모는 통상 수천명 수준(대략 +2천에서 +1만명 범위, 일부 피크에서는 그 이상까지 관찰됨)입니다. 다만 초반의 몇몇 관찰에서는 금요일 잔차가 음수였고 비수기이거나 과거 추세가 이미 금요일 효과를 일부 반영한 경우에는 금요일 기여가 거의 없거나 음의 기여를 보이기도 하므로(불확실성 중간 수준) 이 변수를 항상 동일한 크기로 적용하면 과대보정될 수 있습니다. 요약하면, 예보 시점에 is_friday=1이면 보정 방향은 ‘위로’가 기본 가정이고 보정 폭은 계절·수준에 따라 수천명에서 만명 단위로 달라지니, 수준이 높은(성수기) 기간에는 더 크게, 저수기나 이미 추세로 설명되는 기간에는 기여가 사실상 미미하다고 보정하십시오."}, "weekday": [{"wd": "월", "base": 7311, "calib": 6145, "gain": -16.0}, {"wd": "화", "base": 5995, "calib": 4995, "gain": -16.7}, {"wd": "수", "base": 3886, "calib": 2886, "gain": -25.7}, {"wd": "목", "base": 3270, "calib": 3270, "gain": 0.0}, {"wd": "금", "base": 5003, "calib": 3336, "gain": -33.3}, {"wd": "토", "base": 2940, "calib": 2940, "gain": 0.0}, {"wd": "일", "base": 2372, "calib": 2372, "gain": 0.0}], "method": ["<b>1단계 — 기준 예측.</b> 시계열 기반 모델(Chronos-2)이 <b>과거 28일의 입국자 수만</b> 보고 다음 7일을 예측합니다.", "<b>2단계 — 진단.</b> 언어모델이 각 요인의 그날 값을 보고, 그 요인이 수요를 어느 방향으로 얼마나 움직일지 판정합니다.", "<b>3단계 — 보정.</b> 그 진단을 근거로 기준 예측을 다시 씁니다. 과거의 비슷한 사례를 검색해 함께 참고하며, 하루 보정폭은 기준값의 ±20%를 넘지 않도록 프롬프트에서 제한합니다.", "<b>학습.</b> 학습 구간에서는 예측이 끝난 뒤 실제와 대조해, <b>어느 판정이 틀렸는지</b>를 기록하고 다음 판정에 참고합니다."]};
+const k = n => n.toLocaleString("ko-KR");
+const sg = n => (n>0?"+":"") + k(Math.round(n));
+
+document.getElementById("sd").textContent = k(D.sd);
+
+/* 요약 */
+const K = D.kpi;
+document.getElementById("kpis").innerHTML = [
+  [k(K.daily), "일평균 입국자 (명)"],
+  [K.err_pct.toFixed(1)+"%", "예측 오차 (일평균 대비)"],
+  [K.gain.toFixed(1)+"%", "기준선 대비 오차 감소"],
+  [K.better+" / "+K.n, "기준선보다 정확했던 주"],
+].map(([v,l])=>`<div class="kpi"><div class="v">${v}</div><div class="l">${l}</div></div>`).join("");
+document.getElementById("kpinote").textContent =
+  `검증 6주 전체에서 예측 오차(평균절대오차)는 하루 ${k(K.mae_fc)}명으로, 과거값만 쓴 기준선(${k(K.mae_base)}명)보다 `
+  + `${Math.abs(K.gain).toFixed(1)}% 낮았습니다. 6주 모두에서 기준선보다 정확했습니다.`;
+
+/* 수요 동인 — 세 그룹으로 나눈다. "모델이 쓰는가"와 "데이터로 확인되는가"는 다른 질문이고,
+   둘을 뭉뚱그리면 보고서가 자기모순에 빠진다. */
+const ALL = [...D.confirmed, ...D.unconfirmed];
+const maxAbs = Math.max(...ALL.map(x=>Math.abs(x.diff)));
+
+function drow(x){
+  const w = Math.abs(x.diff)/maxAbs*48;                  // 반폭 48% → 좌우 대칭
+  const neg = x.diff < 0;
+  const strong = Math.abs(x.d)>=0.8;
+  const strength = strong ? "영향 큼" : Math.abs(x.d)>=0.4 ? "영향 보통" : "불확실";
+  return `<div class="drow ${strong?'strong':''}">
+    <div class="dnm"><b>${x.name}</b><span>${x.note} · ${x.n}일 관측</span></div>
+    <div class="dbar"><span class="zero"></span>
+      <i style="${neg?'right:50%;':'left:50%;'}width:${w}%;background:var(--${neg?'down':'up'})"></i></div>
+    <div class="dval">${sg(x.diff)}명<em>${strength}</em></div>
+  </div>`;
+}
+document.getElementById("drv1").innerHTML = D.confirmed.map(drow).join("");
+document.getElementById("drv2").innerHTML = D.unconfirmed.map(drow).join("");
+
+/* 쓰고 있으나 확인되지 않은 요인 — 해당 covariate를 쓴 경우에만 */
+document.getElementById("nf").innerHTML = D.used_unseen.length
+  ? `<b>아래 요인들도 모델에 들어가 있습니다</b>
+   <ul>${D.used_unseen.map(([n,d])=>`<li>${n}${d?` <span class="dim">— ${d}</span>`:""}</li>`).join("")}</ul>
+   <p class="tail">다만 이들의 값이 갈릴 때 수요가 함께 갈리는 패턴은 일별 변동폭 안에 묻혀
+     <b>확인되지 않았습니다.</b></p>`
+  : "";
+
+// 채널 조합에 따라 비는 카테고리는 서브섹션째로 숨긴다
+if(!D.confirmed.length) document.getElementById("grp1").style.display="none";
+if(!D.unconfirmed.length && !D.used_unseen.length) document.getElementById("grp2").style.display="none";
+
+/* 방법론 — 문장은 파이썬 쪽에서 이 런의 설정으로 만든다 */
+document.getElementById("mbody").innerHTML = D.method.map(p=>`<p>${p}</p>`).join("");
+
+/* 요일별 정확도 표 */
+document.getElementById("wk").innerHTML =
+  `<tr><th>요일</th><th>기준 오차</th><th>보정 오차</th><th>개선</th></tr>` +
+  D.weekday.map(w=>{
+    const g=w.gain, cls=g<-2?"wkgood":g>2?"wkbad":"wkflat";
+    return `<tr><td>${w.wd}</td><td>${w.base.toLocaleString()}</td>`
+      + `<td>${w.calib.toLocaleString()}</td>`
+      + `<td class="${cls}">${g>0?"+":""}${g.toFixed(1)}%</td></tr>`;
+  }).join("");
+
+/* 주별 차트 */
+function chart(w){
+  const W=760, H=190, P={t:14,r:16,b:26,l:52};
+  const iw=W-P.l-P.r, ih=H-P.t-P.b;
+  const all=[...w.gt,...w.fc,...w.base];
+  let lo=Math.min(...all), hi=Math.max(...all);
+  const pad=(hi-lo)*.15||1000; lo-=pad; hi+=pad;
+  const x=i=>P.l+(i/(w.days.length-1))*iw;
+  const y=v=>P.t+ih-((v-lo)/(hi-lo))*ih;
+  const path=a=>a.map((v,i)=>(i?"L":"M")+x(i).toFixed(1)+" "+y(v).toFixed(1)).join(" ");
+  const ticks=[lo+(hi-lo)*.15, (lo+hi)/2, hi-(hi-lo)*.15];
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img"
+      aria-label="${w.start} 주의 기준선·예측·실제 입국자 추이">
+    ${ticks.map(t=>`<line x1="${P.l}" x2="${W-P.r}" y1="${y(t).toFixed(1)}" y2="${y(t).toFixed(1)}"
+        stroke="var(--line2)"/>
+      <text x="${P.l-8}" y="${(y(t)+4).toFixed(1)}" text-anchor="end" font-size="10"
+        font-family="var(--mono)" fill="var(--mut)">${Math.round(t/1000)}k</text>`).join("")}
+    ${w.days.map((d,i)=>{
+      const wk = d.wd==="토"||d.wd==="일";
+      return `<text x="${x(i).toFixed(1)}" y="${H-8}" text-anchor="middle" font-size="10"
+        font-family="var(--mono)" fill="${wk?'var(--body)':'var(--mut)'}">${d.md}
+        <tspan dx="3" font-size="9.5">${d.wd}</tspan></text>`;}).join("")}
+    <path d="${path(w.base)}" fill="none" stroke="var(--base)" stroke-width="1.5" stroke-dasharray="3 3"/>
+    <path d="${path(w.fc)}" fill="none" stroke="var(--fc)" stroke-width="2.5"/>
+    <path d="${path(w.gt)}" fill="none" stroke="var(--gt)" stroke-width="2"/>
+    ${w.gt.map((v,i)=>`<circle cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="2.6"
+        fill="var(--gt)"/>`).join("")}
+  </svg>`;
+}
+
+function drivers(e){
+  if(!e || !e.drivers || !e.drivers.length) return "";
+  return `<ul class="edrv">${e.drivers.map(d=>{
+    if(typeof d==="string") return `<li>${d}</li>`;
+    const dir=d.direction||"";
+    const cls=/증가|상승/.test(dir)?"up":/감소|하락/.test(dir)?"dn":"";
+    const dt=d.date?`<b>${d.date.slice(5)}</b>`:"";
+    return `<li class="${cls}">${dt}${d.factor||""}${d.why?` — ${d.why}`:""}</li>`;
+  }).join("")}</ul>`;
+}
+
+document.getElementById("wkn").textContent = `${D.weeks.length}주 · 학습에 쓰지 않은 구간`;
+document.getElementById("weeks").innerHTML = D.weeks.map(w=>{
+  const e=w.expl||{};
+  const gain=(w.mae_base-w.mae_fc)/w.mae_base*100;
+  return `<article class="wk">
+    <div class="whd"><b>${w.start} → ${w.end}</b>
+      <span class="acc">오차 ${k(w.mae_base)} → <s>${k(w.mae_fc)}</s>명 (${gain>0?"−":"+"}${Math.abs(gain).toFixed(0)}%)</span>
+    </div>
+    <div class="wbody">
+      <div class="chart">${chart(w)}</div>
+      ${e.summary?`<div class="ehd">설명 <span>모델의 내부 근거(판정 이유·보정 방식)를 읽기 쉽게 정리한 것 —
+        원문은 아래 과정에서 볼 수 있습니다</span></div>
+        <p class="esum">${e.summary}</p>`:""}
+      ${drivers(e)}
+      ${e.caveat?`<p class="ecav">${e.caveat}</p>`:""}
+      ${process(w)}
+    </div>
+  </article>`;
+}).join("");
+
+/* ── 전 과정 (접힘) ────────────────────────────────────────────────────
+   교수님 요구: 검색된 사례, 메모리에 들어간 원본 context, 기준값 등 전부 확인 가능하게.
+   기본은 접어둔다 — 결론만 읽는 사람과 검증하려는 사람을 둘 다 지원한다. */
+/* 함수 선언으로 둘 것 — const 화살표로 두면 아래 weeks 렌더링이 먼저 실행돼 TDZ 오류가 난다. */
+
+/* 라벨 강도 → 셀 색 클래스. 상수로 두면 아래 렌더링이 먼저 실행돼 TDZ 오류가 난다. */
+function cls(o){ return {"-2":"d2","-1":"d1","0":"","1":"u1","2":"u2"}[String(o)] || ""; }
+
+/* 요인 × 날짜 판정 히트맵. 라벨은 날짜별이므로 대표값 하나로 뭉개면 그 구조가 사라진다. */
+function heat(H, days){
+  if(!H || !H.rows.length)
+    return `<p class="none">모든 요인 중립 — 기준 예측을 그대로 둠</p>`;
+  const hd = days.map(d=>{
+    const wk = d.wd==="토"||d.wd==="일";
+    return `<th class="${wk?'wknd':''}">${d.md}<br>${d.wd}</th>`;
+  }).join("");
+  const body = H.rows.map(r=>{
+    const kn = (D.know||{})[r.ko];       // 이 요인의 knowledge(누적 지식) — 판정의 근거
+    const nm = kn
+      ? `<button class="kbtn" data-kn="${encodeURIComponent(kn)}" data-ko="${r.ko}"
+          aria-label="${r.ko}의 누적 지식 보기">${r.ko}<span class="ki">📖 지식</span></button>`
+      : r.ko;
+    return `<tr><td>${nm}${r.role==="week"?'<i class="rw">주 단위</i>':""}</td>${
+      r.cells.map(c=>`<td><span class="pdc ${cls(c.o)}">${c.t}</span></td>`).join("")}</tr>`;
+  }).join("");
+  const tail = H.quiet
+    ? `<p class="qt">나머지 ${H.quiet}개 요인은 모두 중립 — 예측을 움직이지 않았습니다.</p>` : "";
+  return `<div class="pdwrap"><table class="pd">
+    <thead><tr><th>요인</th>${hd}</tr></thead><tbody>${body}</tbody></table></div>${tail}`;
+}
+
+/* 과거 구간 + 예측 구간을 한 축에 그리는 작은 선그래프.
+   preserveAspectRatio를 끄지 않는다 — 끄면 축마다 배율이 달라져 선 굵기가 찌그러진다. */
+function spark(series, opt={}){
+  const w = 640, h = opt.h || 128;
+  const P = {t:10, r:opt.r||10, b:18, l:44};
+  const iw = w-P.l-P.r, ih = h-P.t-P.b;
+  const all = series.flatMap(s=>s.v).filter(v=>v!=null);
+  if(!all.length) return "";
+  let lo=Math.min(...all), hi=Math.max(...all);
+  const pad=(hi-lo)*.12||500; lo-=pad; hi+=pad;
+  const span = Math.max(...series.map(s=>(s.off||0)+s.v.length));
+  const x = i => P.l + (i/(span-1))*iw;
+  const y = v => P.t + ih - ((v-lo)/(hi-lo))*ih;
+  const path = s => s.v.map((v,i)=>(i?"L":"M")+x(i+(s.off||0)).toFixed(1)+" "+y(v).toFixed(1)).join(" ");
+  const ticks = [lo+(hi-lo)*.12, hi-(hi-lo)*.12];
+  // 경계선은 예측·실제선이 과거선에서 갈라져 나오는 '연결점'(context의 마지막 값, 인덱스 split-1)에
+  // 정확히 놓는다. split-0.5(반 칸 오른쪽)로 두면 선이 갈라지는 지점과 어긋나 보인다.
+  const bx = opt.split!=null ? x(opt.split-1) : null;
+
+  return `<svg viewBox="0 0 ${w} ${h}" width="100%" role="img" aria-label="${opt.alt||''}">
+    ${ticks.map(t=>`<line x1="${P.l}" x2="${w-P.r}" y1="${y(t).toFixed(1)}" y2="${y(t).toFixed(1)}"
+        stroke="var(--line2)"/>
+      <text x="${P.l-7}" y="${(y(t)+3.5).toFixed(1)}" text-anchor="end" font-size="9.5"
+        font-family="var(--mono)" fill="var(--mut)">${Math.round(t/1000)}k</text>`).join("")}
+    ${bx!==null?`<line x1="${bx.toFixed(1)}" x2="${bx.toFixed(1)}" y1="${P.t}" y2="${P.t+ih}"
+        stroke="var(--mut)" stroke-width="1" stroke-dasharray="2 3"/>
+      <text x="${(bx+4).toFixed(1)}" y="${P.t+8}" font-size="9" font-family="var(--mono)"
+        fill="var(--mut)">예측 시작 →</text>`:""}
+    ${series.map(s=>`<path d="${path(s)}" fill="none" stroke="var(--${s.c})"
+        stroke-width="${s.w||1.8}" stroke-linejoin="round" stroke-linecap="round"
+        ${s.dash?'stroke-dasharray="4 3"':""}/>`).join("")}
+    ${series.filter(s=>s.dot).map(s=>s.v.map((v,i)=>
+        (s.skip1&&i===0) ? "" :          // 이어붙이려고 앞에 붙인 연결점에는 점을 찍지 않는다
+        `<circle cx="${x(i+(s.off||0)).toFixed(1)}" cy="${y(v).toFixed(1)}" r="2.4"
+          fill="var(--${s.c})" stroke="var(--card)" stroke-width="1"/>`).join("")).join("")}
+    ${(opt.xlab||[]).map(([i,t])=>`<text x="${x(i).toFixed(1)}" y="${h-5}" text-anchor="middle"
+        font-size="9" font-family="var(--mono)" fill="var(--mut)">${t}</text>`).join("")}
+  </svg>`;
+}
+
+/* 예측 계열을 마지막 실측값에서 출발시킨다 — 안 그러면 과거선과 예측선 사이가 끊겨 보인다.
+   함수 선언으로 둘 것(호이스팅) — const로 두면 위 렌더링이 먼저 실행돼 TDZ 오류가 난다. */
+function joinAt(last, arr){ return [last, ...arr]; }
+
+/* 범례 — 계열이 2개 이상이면 항상 붙인다(색만으로 구분하게 두지 않는다) */
+function lgd(items){
+  return `<div class="mlg">${items.map(([c,t,dash])=>
+    `<span><i class="${dash?'ds':''}" style="background:var(--${c})"></i>${t}</span>`).join("")}</div>`;
+}
+
+function caseCard(c){
+  const VD={better:["개선","up"],worse:["악화","dn"],same:["차이 없음",""]};
+  const [vt,vc]=VD[c.verdict]||[c.verdict,""];
+  const n=c.context.length, m=c.base.length;
+  return `<details class="cs">
+    <summary><b>${c.date}</b><span class="vd ${vc}">보정 결과 ${vt}</span><span class="tog"></span></summary>
+    <div class="csb">
+      <div class="mini">
+        <div class="mlab">메모리에 저장된 원본 — 근거로 쓴 과거 ${n}일과, 그 뒤 7일의 기준값·예측·실제</div>
+        ${lgd([["ctx","과거 실적"],["base","기준값",1],["fc","예측"],["gt","실제"]])}
+        ${spark([
+          {v:c.context, c:"ctx", w:1.5},
+          {v:joinAt(c.context[n-1], c.base), c:"base", off:n-1, dash:true, w:1.6},
+          {v:joinAt(c.context[n-1], c.fc), c:"fc", off:n-1, w:2.2},
+          {v:joinAt(c.context[n-1], c.gt), c:"gt", off:n-1, w:2, dot:true, skip1:true},
+        ], {h:130, split:n, alt:`${c.date} 사례의 과거 ${n}일과 이후 7일 추이`,
+            xlab:[[0,`-${n}일`],[n,"1일차"],[n+6,"7일차"]]})}
+        <div class="mnum">기준 ${c.base.map(k).join(", ")}<br>예측 ${c.fc.map(k).join(", ")}<br>실제 ${c.gt.map(k).join(", ")}</div>
+      </div>
+      <div class="fld"><span class="flab">그때의 판정 — 요인 × 날짜</span>${heat(c.heat, c.days)}</div>
+      ${c.fixes.length?`<div class="fld"><span class="flab">실제와 대조한 뒤 고친 판정</span>
+        <div class="chips">${c.fixes.map(f=>`<span class="chip fix o${f.o}">${f.ko}${f.d?`<i>${f.d}일</i>`:""}
+          <s>${f.was}</s>→<b>${f.now}</b></span>`).join("")}</div></div>`:""}
+      ${c.reflect?`<div class="fld"><span class="flab">기록한 회고</span><p>${c.reflect}</p></div>`:""}
+    </div>
+  </details>`;
+}
+
+function process(w){
+  return `<details class="pr">
+    <summary>이 예측이 만들어진 과정 보기</summary>
+    <div class="prb">
+      <div class="fld"><span class="flab">과거 ${w.context.length}일(모델이 본 전부) → 이후 7일의 기준값·예측·실제</span>
+        ${lgd([["ctx","과거 실적"],["base","기준값",1],["fc","예측"],["gt","실제"]])}
+        ${(()=>{const n=w.context.length; return spark([
+          {v:w.context, c:"ctx", w:1.6},
+          {v:joinAt(w.context[n-1], w.base), c:"base", off:n-1, dash:true, w:1.6},
+          {v:joinAt(w.context[n-1], w.fc), c:"fc", off:n-1, w:2.2},
+          {v:joinAt(w.context[n-1], w.gt), c:"gt", off:n-1, w:2, dot:true, skip1:true},
+        ], {h:130, split:n, alt:"과거 28일과 이후 7일 기준·예측·실제 추이",
+            xlab:[[0,`-${n}일`],[n,"1일차"],[n+6,"7일차"]]});})()}
+        <div class="mnum">기준 ${w.base.map(k).join(", ")}<br>예측 ${w.fc.map(k).join(", ")}<br>실제 ${w.gt.map(k).join(", ")}</div>
+      </div>
+      <div class="fld"><span class="flab">요인 × 날짜 판정</span>${heat(w.heat, w.days)}</div>
+      ${w.r_attr||w.r_calib?`<p class="orig">아래 두 글이 <b>모델이 실제로 쓴 근거 원문</b>입니다.
+        위쪽 설명은 이 둘을 읽기 쉽게 정리한 것입니다.</p>`:""}
+      ${w.r_attr?`<div class="fld"><span class="flab">근거 원문 ① — 요인을 그렇게 판정한 이유</span>
+        <p>${w.r_attr}</p></div>`:""}
+      ${w.r_calib?`<div class="fld"><span class="flab">근거 원문 ② — 그 판정을 예측에 반영한 방식</span>
+        <p>${hl(w.r_calib)}</p></div>`:""}
+      ${w.cases.length?`<div class="fld"><span class="flab">참고한 과거 사례 — 판정이 비슷했던 주</span>
+        <div class="csl">${w.cases.map(caseCard).join("")}</div></div>`:""}
+      ${w.cases_lb.length?`<div class="fld"><span class="flab">참고한 과거 사례 — 수요 흐름이 비슷했던 주</span>
+        <div class="csl">${w.cases_lb.map(caseCard).join("")}</div></div>`:""}
+    </div>
+  </details>`;
+}
+
+/* 과거 사례를 근거로 든 문장에 형광펜 */
+function hl(t){
+  return t.replace(/([^.。]*(?:과거 사례|과거 관찰|과거 반성|회고|검색된)[^.。]*[.。])/g,
+    '<mark>$1</mark>');
+}
+
+/* 증거 ① 날짜별 판정 */
+const P = D.perday;
+document.getElementById("pdw").textContent = `${P.start} → ${P.end}`;
+document.getElementById("pd").innerHTML =
+  `<thead><tr><th>요인</th>${P.days.map(d=>{
+      const wk = d.wd==="토"||d.wd==="일";
+      return `<th class="${wk?'wknd':''}">${d.md}<br>${d.wd}</th>`;}).join("")}</tr></thead>
+   <tbody>${P.rows.map(r=>`<tr><td>${r.ko}</td>${r.cells.map(c=>
+      `<td><span class="pdc ${cls(c.o)}">${c.t}</span></td>`).join("")}</tr>`).join("")}</tbody>`;
+
+/* 증거 ② 회고 → 판단 */
+const C = D.chain;
+document.getElementById("chain").innerHTML = !C ? "" : `
+  <div class="cbox">
+    <div class="clab">학습 구간 · <b>${C.past_date}</b> 주에서 남긴 기록</div>
+    <p>${C.past_reflect}</p>
+  </div>
+  <div class="carrow"><em>↓</em>이 기록이 검색되어 아래 판단의 입력으로 들어감</div>
+  <div class="cbox now">
+    <div class="clab">검증 구간 · <b>${C.now_date}</b> 주의 판단</div>
+    <p><mark>${C.now_quote}</mark></p>
+  </div>`;
+
+document.getElementById("foot").textContent =
+  `검증 구간 ${D.weeks[0].start} ~ ${D.weeks[D.weeks.length-1].start} · 기준 모델 Chronos-2 · 일별 변동폭 ±${k(D.sd)}명`;
+
+/* 히트맵 요인명 클릭 → 그 요인의 knowledge(누적 지식)를 팝오버로. 판정의 근거를 그 자리에서 확인. */
+(function(){
+  const pop = document.createElement("div");
+  pop.className = "kpop"; pop.hidden = true;
+  document.body.appendChild(pop);
+  function close(){ pop.hidden = true; }
+  document.addEventListener("click", e=>{
+    const btn = e.target.closest ? e.target.closest(".kbtn") : null;
+    if(!btn){ if(!e.target.closest || !e.target.closest(".kpop")) close(); return; }
+    e.stopPropagation();
+    pop.innerHTML = `<div class="khd">${btn.dataset.ko}<span>누적 지식 — 이 요인의 판정 근거</span>
+      <button class="kx" aria-label="닫기">✕</button></div>
+      <p>${decodeURIComponent(btn.dataset.kn)}</p>`;
+    pop.hidden = false;
+    const r = btn.getBoundingClientRect();
+    const top = r.bottom + window.scrollY + 6;
+    const left = Math.min(r.left + window.scrollX, window.scrollX + document.documentElement.clientWidth - 380);
+    pop.style.top = top + "px"; pop.style.left = Math.max(12, left) + "px";
+    pop.querySelector(".kx").addEventListener("click", close);
+  });
+  document.addEventListener("keydown", e=>{ if(e.key==="Escape") close(); });
+})();
+</script></body></html>
